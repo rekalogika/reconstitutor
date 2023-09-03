@@ -1,4 +1,4 @@
-This library provides a small layer that sits above Doctrine events to help you
+This library provides a thin layer that sits above Doctrine events to help you
 reconstitute/hydrate your entities. It lets you augment Doctrine's hydration
 with your logic in a concise and expressive class.
 
@@ -17,8 +17,8 @@ cases exist:
   entities.
 
 These days we usually call the process *hydration*. *Reconstitution* is the term
-used by Eric Evans in *Domain-Driven Design: Tackling Complexity in the Heart of
-Software*.
+used by Eric Evans in *"Domain-Driven Design: Tackling Complexity in the Heart of
+Software"*.
 
 Features
 --------
@@ -37,8 +37,8 @@ Features
 * It has what we think is the correct behavior. It asks your reconstitutor to
   save only after Doctrine has successfully saved the object. It doesn't rely on
   Doctrine seeing the object being dirty before `flush()`-ing. i.e. your
-  entities don't have to update a Doctrine-managed property, like
-  `$lastUpdated`,a just to make sure the correct Doctrine event will be fired.
+  entities don't have to modify a Doctrine-managed property —like
+  `$lastUpdated`— just to make sure the correct Doctrine event will be fired.
 
 Installation
 ------------
