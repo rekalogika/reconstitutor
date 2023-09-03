@@ -36,9 +36,9 @@ Features
   exceptions defined in `PropertyAccessorInterface`.
 * It has what we think is the correct behavior. It asks your reconstitutor to
   save only after Doctrine has successfully saved the object. It doesn't rely on
-  Doctrine seeing the object being dirty before asking your reconstitutor to
-  save. i.e. no need to update something like `$lastUpdated` just to make sure
-  the correct event will be fired.
+  Doctrine seeing the object being dirty before `flush()`-ing. i.e. your
+  entities don't have to update a Doctrine-managed property, like
+  `$lastUpdated`,a just to make sure the correct Doctrine event will be fired.
 
 Installation
 ------------
@@ -50,7 +50,7 @@ composer require rekalogika/reconstitutor
 Usage
 -----
 
-Because everyone knows about file uploads, we are going to use that as an
+Because everyone knows about file uploads, we are going to use it as an
 example, even if you probably won't use this framework as a means for handling
 file uploads.
 
@@ -90,7 +90,8 @@ class Order
 
 During the fetching of the object from the database, Doctrine will instantiate
 the object and hydrate `$id` and other properties that it manages. Then, it will
-be our reconstitutor's turn to handle the `$paymentReceipt` property.
+be our reconstitutor's turn to handle the `$paymentReceipt` property. Similar
+things also happen when the object is persisted to the database, or removed.
 
 ```php
 use Rekalogika\Reconstitutor\AbstractClassReconstitutor;
@@ -122,6 +123,7 @@ final class OrderReconstitutor extends AbstractClassReconstitutor
 
         if ($file instanceof UploadedFile) {
             file_put_contents($path, $file->getContent());
+            $this->set($order, 'paymentReceipt', new File($path));
         }
     }
 
@@ -157,3 +159,11 @@ final class OrderReconstitutor extends AbstractClassReconstitutor
     }
 }
 ```
+
+Reconstitutor Abstract Class
+----------------------------
+
+The example above uses `AbstractClassReconstitutor` where our target object is
+matched using the class provided by `getClass()`. There is also
+`AbstractAttributeReconstitutor` that operates on objects that have a specific
+PHP attribute.
