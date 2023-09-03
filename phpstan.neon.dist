@@ -1,0 +1,9 @@
+parameters:
+    level: max
+    paths:
+        - src
+        - tests
+        - config
+    ignoreErrors:
+        - '#Unreachable statement - code above always terminates.#'
+        - '#Property Rekalogika\\Reconstitutor\\Tests\\Model\\Entity::\$attribute is never read, only written#'
