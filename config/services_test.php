@@ -44,27 +44,35 @@ return static function (ContainerConfigurator $containerConfigurator): void {
         DoctrineListener::class
     )->public();
 
-    $services->set(EntityReconstitutor::class)
-        ->args([
-            __DIR__ . '/../var/storage.txt'
-        ])
-        ->tag('rekalogika.reconstitutor.class');
+    if (class_exists(EntityReconstitutor::class)) {
+        $services->set(EntityReconstitutor::class)
+            ->args([
+                __DIR__ . '/../var/storage.txt'
+            ])
+            ->tag('rekalogika.reconstitutor.class');
+    }
 
-    $services->set(InterfaceReconstitutor::class)
-        ->args([
-            __DIR__ . '/../var/storage.txt'
-        ])
-        ->tag('rekalogika.reconstitutor.class');
+    if (class_exists(InterfaceReconstitutor::class)) {
+        $services->set(InterfaceReconstitutor::class)
+            ->args([
+                __DIR__ . '/../var/storage.txt'
+            ])
+            ->tag('rekalogika.reconstitutor.class');
+    }
 
-    $services->set(SuperclassReconstitutor::class)
-        ->args([
-            __DIR__ . '/../var/storage.txt'
-        ])
-        ->tag('rekalogika.reconstitutor.class');
+    if (class_exists(SuperclassReconstitutor::class)) {
+        $services->set(SuperclassReconstitutor::class)
+            ->args([
+                __DIR__ . '/../var/storage.txt'
+            ])
+            ->tag('rekalogika.reconstitutor.class');
+    }
 
-    $services->set(AttributeReconstitutor::class)
-        ->args([
-            __DIR__ . '/../var/storage.txt'
-        ])
-        ->tag('rekalogika.reconstitutor.attribute');
+    if (class_exists(AttributeReconstitutor::class)) {
+        $services->set(AttributeReconstitutor::class)
+            ->args([
+                __DIR__ . '/../var/storage.txt'
+            ])
+            ->tag('rekalogika.reconstitutor.attribute');
+    }
 };
