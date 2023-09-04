@@ -44,7 +44,7 @@ class RekalogikaReconstitutorExtension extends Extension
             ->addTag('rekalogika.reconstitutor.class');
 
         $container
-            ->register(AttributeReconstitutorInterface::class)
+            ->registerForAutoconfiguration(AttributeReconstitutorInterface::class)
             ->addTag('rekalogika.reconstitutor.attribute');
     }
 }
