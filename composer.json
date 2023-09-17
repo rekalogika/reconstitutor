@@ -21,10 +21,10 @@
     ],
     "require": {
         "doctrine/orm": "^2.16",
-        "rekalogika/direct-property-access": "^1.1",
-        "symfony/config": "^6.1",
-        "symfony/dependency-injection": "^6.1",
-        "symfony/http-kernel": "^6.1"
+        "rekalogika/direct-property-access": "^1.1.2 || ^1.2",
+        "symfony/config": "^6.0",
+        "symfony/dependency-injection": "^6.0",
+        "symfony/http-kernel": "^6.0"
     },
     "require-dev": {
         "phpstan/phpstan": "^1.10",
@@ -32,7 +32,7 @@
         "vimeo/psalm": "^5.15",
         "psalm/plugin-phpunit": "^0.18.4",
         "psalm/plugin-symfony": "^5.0",
-        "symfony/phpunit-bridge": "^6.1"
+        "symfony/phpunit-bridge": "^6.0"
     },
     "extra": {
         "branch-alias": {
