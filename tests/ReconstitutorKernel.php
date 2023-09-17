@@ -11,13 +11,20 @@
 
 namespace Rekalogika\Reconstitutor\Tests;
 
-use Rekalogika\DirectPropertyAccess\Symfony\RekalogikaDirectPropertyAccessBundle;
+use Rekalogika\DirectPropertyAccess\RekalogikaDirectPropertyAccessBundle;
 use Rekalogika\Reconstitutor\RekalogikaReconstitutorBundle;
 use Symfony\Component\Config\Loader\LoaderInterface;
 use Symfony\Component\HttpKernel\Kernel;
 
 class ReconstitutorKernel extends Kernel
 {
+    public function __construct()
+    {
+        $this->environment = 'test';
+
+        parent::__construct('test', true);
+    }
+
     public function registerBundles(): iterable
     {
         return [
