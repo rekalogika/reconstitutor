@@ -25,7 +25,7 @@ class ReconstitutorTest extends TestCase
 
     public function setUp(): void
     {
-        $kernel = new ReconstitutorKernel('test', true);
+        $kernel = new ReconstitutorKernel();
         $kernel->boot();
         $this->container = $kernel->getContainer();
     }

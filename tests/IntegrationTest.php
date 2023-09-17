@@ -19,7 +19,7 @@ class IntegrationTest extends TestCase
 {
     public function testServiceWiring(): void
     {
-        $kernel = new ReconstitutorKernel('test', true);
+        $kernel = new ReconstitutorKernel();
         $kernel->boot();
         $container = $kernel->getContainer();
 
