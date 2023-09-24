@@ -1,6 +1,7 @@
 {
     "name": "rekalogika/reconstitutor",
-    "description": "A small layer above Doctrine events to help you reconstitute/hydrate your entities. The most common example being handling file uploads, but also many other purposes. It lets you augment Doctrine's hydration with your logic in a concise and expressive class.",
+    "description": "A thin layer above Doctrine events to help you reconstitute/hydrate your entities. The most common example being handling file uploads, but also many other purposes. It lets you augment Doctrine's hydration with your logic in a concise and expressive class.",
+    "homepage": "https://rekalogika.dev/reconstitutor",
     "type": "symfony-bundle",
     "license": "MIT",
     "autoload": {
