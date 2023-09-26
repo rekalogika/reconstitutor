@@ -45,3 +45,11 @@ Software"*.
 
 [rekalogika.dev/reconstitutor](https://rekalogika.dev/reconstitutor)
 
+## License
+
+MIT
+
+## Contributing
+
+Issues and pull requests should be filed in the GitHub repository
+[rekalogika/reconstitutor](https://github.com/rekalogika/reconstitutor).
