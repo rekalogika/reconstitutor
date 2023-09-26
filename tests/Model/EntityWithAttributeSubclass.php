@@ -11,12 +11,6 @@
 
 namespace Rekalogika\Reconstitutor\Tests\Model;
 
-#[StubAttribute]
-class EntityWithAttribute
+class EntityWithAttributeSubclass extends EntityWithAttribute
 {
-    use EntityTrait;
-
-    final public function __construct()
-    {
-    }
 }

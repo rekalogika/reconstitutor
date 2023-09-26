@@ -12,10 +12,16 @@
 namespace Rekalogika\Reconstitutor\Resolver;
 
 use Rekalogika\Reconstitutor\Contract\AttributeReconstitutorInterface;
+use Rekalogika\Reconstitutor\Contract\ReconstitutorInterface;
 use Rekalogika\Reconstitutor\Contract\ReconstitutorResolverInterface;
 
 final class AttributeReconstitutorResolver implements ReconstitutorResolverInterface
 {
+    /**
+     * @var array<class-string,iterable<int,ReconstitutorInterface<object>>>
+     */
+    private array $cache = [];
+
     /**
      * @param array<class-string,array<int,AttributeReconstitutorInterface>> $classMap
      */
@@ -23,31 +29,34 @@ final class AttributeReconstitutorResolver implements ReconstitutorResolverInter
     {
     }
 
-    /**
-     * @return array<array-key,class-string>
-     */
-    private function getAllApplicableAttributes(): array
-    {
-        return array_keys($this->classMap);
-    }
-
     public function getReconstitutors(object $object): iterable
     {
-        $applicableAttributes = $this->getAllApplicableAttributes();
+        $class = get_class($object);
 
-        $reflectionClass = (new \ReflectionClass(get_class($object)));
+        if (isset($this->cache[$class])) {
+            return $this->cache[$class];
+        }   
+
+        $reconstitutors = [];
+
+        $reflectionClass = new \ReflectionClass($class);
         while ($reflectionClass instanceof \ReflectionClass) {
             $attributes = $reflectionClass->getAttributes();
 
             foreach ($attributes as $reflectionAttribute) {
-                if (!\in_array($reflectionAttribute->getName(), $applicableAttributes, true)) {
+                $attributeClass = $reflectionAttribute->getName();
+                $reconstitutor = $this->classMap[$attributeClass] ?? [];
+
+                if (empty($reconstitutor)) {
                     continue;
                 }
 
-                yield from $this->classMap[$reflectionAttribute->getName()];
+                $reconstitutors += $reconstitutor;
             }
 
             $reflectionClass = $reflectionClass->getParentClass();
         }
+
+        return $this->cache[$class] = $reconstitutors;
     }
 }

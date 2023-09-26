@@ -18,6 +18,7 @@ use Rekalogika\Reconstitutor\Tests\Model\Entity;
 use Rekalogika\Reconstitutor\Tests\Model\EntityExtendingAbstractStub;
 use Rekalogika\Reconstitutor\Tests\Model\EntityImplementingStubInterface;
 use Rekalogika\Reconstitutor\Tests\Model\EntityWithAttribute;
+use Rekalogika\Reconstitutor\Tests\Model\EntityWithAttributeSubclass;
 
 class ReconstitutorTest extends TestCase
 {
@@ -48,6 +49,11 @@ class ReconstitutorTest extends TestCase
     public function testAttributeReconstitutor(): void
     {
         $this->testOne(EntityWithAttribute::class);
+    }
+
+    public function testAttributeSubclassReconstitutor(): void
+    {
+        $this->testOne(EntityWithAttributeSubclass::class);
     }
 
     /**
