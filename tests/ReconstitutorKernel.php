@@ -21,7 +21,7 @@ class ReconstitutorKernel extends Kernel
     public function __construct()
     {
         $this->environment = 'test';
-
+        $this->debug = true;
         parent::__construct('test', true);
     }
 
