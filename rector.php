@@ -9,10 +9,7 @@ use Rector\CodingStyle\Rector\Use_\SeparateMultiUseImportsRector;
 use Rector\Config\RectorConfig;
 use Rector\DeadCode\Rector\Assign\RemoveUnusedVariableAssignRector;
 use Rector\DeadCode\Rector\ClassMethod\RemoveEmptyClassMethodRector;
-use Rector\DeadCode\Rector\ClassMethod\RemoveUnusedPrivateMethodParameterRector;
 use Rector\DeadCode\Rector\Node\RemoveNonExistingVarAnnotationRector;
-use Rector\Php81\Rector\Array_\FirstClassCallableRector;
-use Rector\Php81\Rector\ClassMethod\NewInInitializerRector;
 use Rector\Php83\Rector\ClassMethod\AddOverrideAttributeToOverriddenMethodsRector;
 use Rector\Strict\Rector\Ternary\DisallowedShortTernaryRuleFixerRector;
 use Rector\ValueObject\PhpVersion;
@@ -29,11 +26,11 @@ return RectorConfig::configure()
         codeQuality: true,
         codingStyle: true,
         typeDeclarations: true,
-        // privatization: true,
-        // instanceOf: true,
-        // strictBooleans: true,
-        // symfonyCodeQuality: true,
-        // doctrineCodeQuality: true,
+        privatization: true,
+        instanceOf: true,
+        strictBooleans: true,
+        symfonyCodeQuality: true,
+        doctrineCodeQuality: true,
     )
     ->withPhpSets(php81: true)
     ->withRules([
