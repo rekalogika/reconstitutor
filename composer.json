@@ -28,9 +28,9 @@
         "symfony/http-kernel": "^6.0 || ^7.0"
     },
     "require-dev": {
-        "phpstan/phpstan": "^1.10",
+        "phpstan/phpstan": "^1.12",
         "phpunit/phpunit": "^9.6",
-        "vimeo/psalm": "^5.15",
+        "vimeo/psalm": "^5.26",
         "psalm/plugin-phpunit": "^0.18.4",
         "psalm/plugin-symfony": "^5.0",
         "symfony/phpunit-bridge": "^6.0 || ^7.0"
