@@ -16,6 +16,7 @@ use Rekalogika\Reconstitutor\ReconstitutorProcessor;
 use Rekalogika\Reconstitutor\Resolver\AttributeReconstitutorResolver;
 use Rekalogika\Reconstitutor\Resolver\ClassReconstitutorResolver;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
+
 use function Symfony\Component\DependencyInjection\Loader\Configurator\service;
 use function Symfony\Component\DependencyInjection\Loader\Configurator\tagged_iterator;
 

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /*
  * This file is part of rekalogika/reconstitutor package.
  *
@@ -18,7 +20,7 @@ trait DirectPropertyAccessorAwareTrait
     private DirectPropertyAccessor $propertyAccessor;
 
     public function setDirectPropertyAccessor(
-        DirectPropertyAccessor $propertyAccessor
+        DirectPropertyAccessor $propertyAccessor,
     ): void {
         $this->propertyAccessor = $propertyAccessor;
     }

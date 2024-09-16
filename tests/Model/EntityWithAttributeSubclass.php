@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /*
  * This file is part of rekalogika/reconstitutor package.
  *
@@ -11,6 +13,4 @@
 
 namespace Rekalogika\Reconstitutor\Tests\Model;
 
-class EntityWithAttributeSubclass extends EntityWithAttribute
-{
-}
+class EntityWithAttributeSubclass extends EntityWithAttribute {}

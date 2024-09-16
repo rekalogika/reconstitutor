@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /*
  * This file is part of rekalogika/reconstitutor package.
  *
@@ -20,9 +22,7 @@ use Rekalogika\Reconstitutor\ReconstitutorProcessor;
 
 class DoctrineListener
 {
-    public function __construct(private ReconstitutorProcessor $processor)
-    {
-    }
+    public function __construct(private ReconstitutorProcessor $processor) {}
 
     public function prePersist(PrePersistEventArgs $args): void
     {

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /*
  * This file is part of rekalogika/reconstitutor package.
  *
@@ -17,7 +19,7 @@ use Rekalogika\Reconstitutor\Tests\Model\StubAttribute;
 class AttributeReconstitutor extends AbstractAttributeReconstitutor
 {
     use CommonTrait;
-    
+
     public static function getAttributeClass(): string
     {
         return StubAttribute::class;

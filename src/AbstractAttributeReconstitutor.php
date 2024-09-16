@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /*
  * This file is part of rekalogika/reconstitutor package.
  *
@@ -18,8 +20,7 @@ use Rekalogika\Reconstitutor\Contract\DirectPropertyAccessorAwareTrait;
 /**
  * @extends AbstractReconstitutor<object>
  */
-abstract class AbstractAttributeReconstitutor extends AbstractReconstitutor
-implements
+abstract class AbstractAttributeReconstitutor extends AbstractReconstitutor implements
     DirectPropertyAccessorAwareInterface,
     AttributeReconstitutorInterface
 {

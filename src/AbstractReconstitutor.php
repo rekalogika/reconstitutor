@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /*
  * This file is part of rekalogika/reconstitutor package.
  *
@@ -17,24 +19,15 @@ use Rekalogika\Reconstitutor\Contract\DirectPropertyAccessorAwareTrait;
 /**
  * @template T of object
  */
-abstract class AbstractReconstitutor
-implements DirectPropertyAccessorAwareInterface
+abstract class AbstractReconstitutor implements DirectPropertyAccessorAwareInterface
 {
     use DirectPropertyAccessorAwareTrait;
 
-    public function onCreate(object $object): void
-    {
-    }
+    public function onCreate(object $object): void {}
 
-    public function onLoad(object $object): void
-    {
-    }
+    public function onLoad(object $object): void {}
 
-    public function onSave(object $object): void
-    {
-    }
+    public function onSave(object $object): void {}
 
-    public function onRemove(object $object): void
-    {
-    }
+    public function onRemove(object $object): void {}
 }

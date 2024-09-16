@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /*
  * This file is part of rekalogika/reconstitutor package.
  *
@@ -16,7 +18,5 @@ class EntityWithAttribute
 {
     use EntityTrait;
 
-    final public function __construct()
-    {
-    }
+    final public function __construct() {}
 }

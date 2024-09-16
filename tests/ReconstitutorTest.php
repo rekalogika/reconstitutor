@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /*
  * This file is part of rekalogika/reconstitutor package.
  *
@@ -72,7 +74,7 @@ class ReconstitutorTest extends TestCase
         // test create and save
 
         $this->assertTrue(class_exists($entityClass));
-        $entity = new $entityClass;
+        $entity = new $entityClass();
         $entity->setAttribute('foo');
 
         $processor->onSave($entity);

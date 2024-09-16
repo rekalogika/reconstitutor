@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /*
  * This file is part of rekalogika/reconstitutor package.
  *
@@ -16,6 +18,6 @@ use Rekalogika\DirectPropertyAccess\DirectPropertyAccessor;
 interface DirectPropertyAccessorAwareInterface
 {
     public function setDirectPropertyAccessor(
-        DirectPropertyAccessor $propertyAccessor
+        DirectPropertyAccessor $propertyAccessor,
     ): void;
 }

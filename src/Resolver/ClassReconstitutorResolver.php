@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /*
  * This file is part of rekalogika/reconstitutor package.
  *
@@ -19,22 +21,20 @@ final class ClassReconstitutorResolver implements ReconstitutorResolverInterface
     /**
      * @param array<class-string,array<int,ClassReconstitutorInterface<object>>> $classMap
      */
-    public function __construct(private array $classMap)
-    {
-    }
+    public function __construct(private array $classMap) {}
 
     /**
      * @return array<array-key,class-string>
      */
     private static function getAllClasses(object $object): array
     {
-        $classes = \array_merge(
+        $classes = array_merge(
             [\get_class($object)],
             class_parents($object),
-            class_implements($object)
+            class_implements($object),
         );
 
-        return \array_unique($classes);
+        return array_unique($classes);
     }
 
     /**
@@ -51,7 +51,7 @@ final class ClassReconstitutorResolver implements ReconstitutorResolverInterface
                 continue;
             }
 
-            $reconstitutors = \array_merge($reconstitutors, $this->classMap[$class]);
+            $reconstitutors = array_merge($reconstitutors, $this->classMap[$class]);
         }
 
         return $reconstitutors;

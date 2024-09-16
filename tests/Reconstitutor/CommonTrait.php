@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /*
  * This file is part of rekalogika/reconstitutor package.
  *
@@ -13,14 +15,12 @@ namespace Rekalogika\Reconstitutor\Tests\Reconstitutor;
 
 trait CommonTrait
 {
-    final public function __construct(private string $fileStorage)
-    {
-    }
-    
+    final public function __construct(private string $fileStorage) {}
+
     public function onSave(object $object): void
     {
         $value = $this->get($object, 'attribute');
-        assert(is_string($value));
+        \assert(\is_string($value));
 
         file_put_contents($this->fileStorage, $value);
     }
@@ -31,7 +31,7 @@ trait CommonTrait
             $value = null;
         } else {
             $value = file_get_contents($this->fileStorage);
-            assert(is_string($value));
+            \assert(\is_string($value));
         }
 
         $this->set($object, 'attribute', $value);

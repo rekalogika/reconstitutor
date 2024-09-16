@@ -26,28 +26,28 @@ return static function (ContainerConfigurator $containerConfigurator): void {
 
     $services->alias(
         'test.' . ClassReconstitutorResolver::class,
-        ClassReconstitutorResolver::class
+        ClassReconstitutorResolver::class,
     )->public();
 
     $services->alias(
         'test.' . AttributeReconstitutorResolver::class,
-        AttributeReconstitutorResolver::class
+        AttributeReconstitutorResolver::class,
     )->public();
 
     $services->alias(
         'test.' . ReconstitutorProcessor::class,
-        ReconstitutorProcessor::class
+        ReconstitutorProcessor::class,
     )->public();
 
     $services->alias(
         'test.' . DoctrineListener::class,
-        DoctrineListener::class
+        DoctrineListener::class,
     )->public();
 
     if (class_exists(EntityReconstitutor::class)) {
         $services->set(EntityReconstitutor::class)
             ->args([
-                __DIR__ . '/../var/storage.txt'
+                __DIR__ . '/../var/storage.txt',
             ])
             ->tag('rekalogika.reconstitutor.class');
     }
@@ -55,7 +55,7 @@ return static function (ContainerConfigurator $containerConfigurator): void {
     if (class_exists(InterfaceReconstitutor::class)) {
         $services->set(InterfaceReconstitutor::class)
             ->args([
-                __DIR__ . '/../var/storage.txt'
+                __DIR__ . '/../var/storage.txt',
             ])
             ->tag('rekalogika.reconstitutor.class');
     }
@@ -63,7 +63,7 @@ return static function (ContainerConfigurator $containerConfigurator): void {
     if (class_exists(SuperclassReconstitutor::class)) {
         $services->set(SuperclassReconstitutor::class)
             ->args([
-                __DIR__ . '/../var/storage.txt'
+                __DIR__ . '/../var/storage.txt',
             ])
             ->tag('rekalogika.reconstitutor.class');
     }
@@ -71,7 +71,7 @@ return static function (ContainerConfigurator $containerConfigurator): void {
     if (class_exists(AttributeReconstitutor::class)) {
         $services->set(AttributeReconstitutor::class)
             ->args([
-                __DIR__ . '/../var/storage.txt'
+                __DIR__ . '/../var/storage.txt',
             ])
             ->tag('rekalogika.reconstitutor.attribute');
     }

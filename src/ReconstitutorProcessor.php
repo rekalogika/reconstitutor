@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /*
  * This file is part of rekalogika/reconstitutor package.
  *
@@ -11,17 +13,15 @@
 
 namespace Rekalogika\Reconstitutor;
 
-use Rekalogika\Reconstitutor\Contract\ReconstitutorResolverInterface;
 use Rekalogika\Reconstitutor\Contract\ReconstitutorInterface;
+use Rekalogika\Reconstitutor\Contract\ReconstitutorResolverInterface;
 
 final class ReconstitutorProcessor
 {
     /**
      * @param iterable<ReconstitutorResolverInterface> $resolvers
      */
-    public function __construct(private iterable $resolvers)
-    {
-    }
+    public function __construct(private iterable $resolvers) {}
 
     /**
      * @return iterable<array-key,ReconstitutorInterface<object>>

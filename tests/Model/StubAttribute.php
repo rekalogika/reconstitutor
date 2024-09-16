@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /*
  * This file is part of rekalogika/reconstitutor package.
  *
@@ -12,6 +14,4 @@
 namespace Rekalogika\Reconstitutor\Tests\Model;
 
 #[\Attribute(\Attribute::TARGET_CLASS)]
-class StubAttribute
-{
-}
+class StubAttribute {}

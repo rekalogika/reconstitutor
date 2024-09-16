@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /*
  * This file is part of rekalogika/reconstitutor package.
  *
@@ -25,17 +27,15 @@ final class AttributeReconstitutorResolver implements ReconstitutorResolverInter
     /**
      * @param array<class-string,array<int,AttributeReconstitutorInterface>> $classMap
      */
-    public function __construct(private array $classMap)
-    {
-    }
+    public function __construct(private array $classMap) {}
 
     public function getReconstitutors(object $object): iterable
     {
-        $class = get_class($object);
+        $class = \get_class($object);
 
         if (isset($this->cache[$class])) {
             return $this->cache[$class];
-        }   
+        }
 
         $reconstitutors = [];
 

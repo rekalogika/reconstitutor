@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /*
  * This file is part of rekalogika/reconstitutor package.
  *
@@ -28,7 +30,7 @@ class IntegrationTest extends TestCase
 
         $this->assertInstanceOf(
             ClassReconstitutorResolver::class,
-            $classReconstitutorResolver
+            $classReconstitutorResolver,
         );
 
         $attributeReconstitutorResolver = $container
@@ -36,7 +38,7 @@ class IntegrationTest extends TestCase
 
         $this->assertInstanceOf(
             AttributeReconstitutorResolver::class,
-            $attributeReconstitutorResolver
+            $attributeReconstitutorResolver,
         );
     }
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /*
  * This file is part of rekalogika/reconstitutor package.
  *
@@ -33,7 +35,5 @@ class ReconstitutorKernel extends Kernel
         ];
     }
 
-    public function registerContainerConfiguration(LoaderInterface $loader): void
-    {
-    }
+    public function registerContainerConfiguration(LoaderInterface $loader): void {}
 }
