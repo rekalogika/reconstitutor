@@ -20,6 +20,7 @@ class AttributeReconstitutor extends AbstractAttributeReconstitutor
 {
     use CommonTrait;
 
+    #[\Override]
     public static function getAttributeClass(): string
     {
         return StubAttribute::class;

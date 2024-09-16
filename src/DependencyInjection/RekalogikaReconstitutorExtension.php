@@ -26,6 +26,7 @@ class RekalogikaReconstitutorExtension extends Extension
     /**
      * @param array<array-key,mixed> $configs
      */
+    #[\Override]
     public function load(array $configs, ContainerBuilder $container): void
     {
         $env = $container->getParameter('kernel.environment');

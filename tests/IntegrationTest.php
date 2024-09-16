@@ -23,6 +23,7 @@ class IntegrationTest extends TestCase
     {
         $kernel = new ReconstitutorKernel();
         $kernel->boot();
+
         $container = $kernel->getContainer();
 
         $classReconstitutorResolver = $container

@@ -22,7 +22,7 @@ use Rekalogika\Reconstitutor\ReconstitutorProcessor;
 
 class DoctrineListener
 {
-    public function __construct(private ReconstitutorProcessor $processor) {}
+    public function __construct(private readonly ReconstitutorProcessor $processor) {}
 
     public function prePersist(PrePersistEventArgs $args): void
     {

@@ -27,6 +27,7 @@ class ReconstitutorKernel extends Kernel
         parent::__construct('test', true);
     }
 
+    #[\Override]
     public function registerBundles(): iterable
     {
         return [
@@ -35,5 +36,6 @@ class ReconstitutorKernel extends Kernel
         ];
     }
 
+    #[\Override]
     public function registerContainerConfiguration(LoaderInterface $loader): void {}
 }

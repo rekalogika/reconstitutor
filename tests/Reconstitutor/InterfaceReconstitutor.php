@@ -20,6 +20,7 @@ use Rekalogika\Reconstitutor\Tests\Model\StubInterface;
  */
 class InterfaceReconstitutor extends AbstractTestClassReconstitutor
 {
+    #[\Override]
     public static function getClass(): string
     {
         return StubInterface::class;

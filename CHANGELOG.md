@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.3.0
+
+* chore: php-cs-fixer run
+
 ## 1.2.0
 
 * feat: Supports ORM 3

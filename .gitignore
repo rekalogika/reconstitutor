@@ -4,3 +4,4 @@ vendor
 var
 .php-cs-fixer.cache
 tools
+rector.log

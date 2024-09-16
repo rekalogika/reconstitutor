@@ -26,10 +26,10 @@ final class ClassReconstitutorResolver implements ReconstitutorResolverInterface
     /**
      * @return array<array-key,class-string>
      */
-    private static function getAllClasses(object $object): array
+    private function getAllClasses(object $object): array
     {
         $classes = array_merge(
-            [\get_class($object)],
+            [$object::class],
             class_parents($object),
             class_implements($object),
         );
@@ -40,9 +40,10 @@ final class ClassReconstitutorResolver implements ReconstitutorResolverInterface
     /**
      * @return iterable<int,ClassReconstitutorInterface<object>>
      */
+    #[\Override]
     public function getReconstitutors(object $object): iterable
     {
-        $classes = self::getAllClasses($object);
+        $classes = $this->getAllClasses($object);
 
         $reconstitutors = [];
 

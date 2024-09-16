@@ -26,10 +26,12 @@ class ReconstitutorTest extends TestCase
 {
     private ?ContainerInterface $container = null;
 
-    public function setUp(): void
+    #[\Override]
+    protected function setUp(): void
     {
         $kernel = new ReconstitutorKernel();
         $kernel->boot();
+
         $this->container = $kernel->getContainer();
     }
 

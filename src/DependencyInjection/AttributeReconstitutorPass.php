@@ -23,6 +23,7 @@ use Symfony\Component\DependencyInjection\Definition;
 
 class AttributeReconstitutorPass implements CompilerPassInterface
 {
+    #[\Override]
     public function process(ContainerBuilder $container): void
     {
         $reconstitutorResolver = $container
@@ -39,13 +40,13 @@ class AttributeReconstitutorPass implements CompilerPassInterface
          */
         $classMap = [];
 
-        foreach ($attributeReconstitutors as $id => $service) {
+        foreach (array_keys($attributeReconstitutors) as $id) {
             $definition = $container->getDefinition($id);
             $reconstitutorClass = $definition->getClass();
             \assert(\is_string($reconstitutorClass));
             \assert(class_exists($reconstitutorClass));
 
-            if (!$r = $container->getReflectionClass($reconstitutorClass)) {
+            if (($r = $container->getReflectionClass($reconstitutorClass)) === null) {
                 throw new \InvalidArgumentException(\sprintf('Class "%s" used for service "%s" cannot be found.', $reconstitutorClass, $id));
             }
 
@@ -60,7 +61,7 @@ class AttributeReconstitutorPass implements CompilerPassInterface
             $reconstitutorClass = $r->name;
             $targetClass = $reconstitutorClass::getAttributeClass();
 
-            if (!$r = $container->getReflectionClass($targetClass)) {
+            if (($r = $container->getReflectionClass($targetClass)) === null) {
                 throw new \InvalidArgumentException(\sprintf('Class "%s" used by reconstitutor "%s" cannot be found.', $targetClass, $reconstitutorClass));
             }
 
