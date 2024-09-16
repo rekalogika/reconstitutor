@@ -20,6 +20,7 @@ use Rekalogika\Reconstitutor\Tests\Model\AbstractStub;
  */
 class SuperclassReconstitutor extends AbstractTestClassReconstitutor
 {
+    #[\Override]
     public static function getClass(): string
     {
         return AbstractStub::class;

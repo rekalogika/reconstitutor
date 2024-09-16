@@ -29,6 +29,7 @@ final class AttributeReconstitutorResolver implements ReconstitutorResolverInter
      */
     public function __construct(private array $classMap) {}
 
+    #[\Override]
     public function getReconstitutors(object $object): iterable
     {
         $class = $object::class;

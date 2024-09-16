@@ -26,5 +26,6 @@ abstract class AbstractAttributeReconstitutor extends AbstractReconstitutor impl
 {
     use DirectPropertyAccessorAwareTrait;
 
+    #[\Override]
     abstract public static function getAttributeClass(): string;
 }

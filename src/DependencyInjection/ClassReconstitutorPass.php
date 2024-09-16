@@ -23,6 +23,7 @@ use Symfony\Component\DependencyInjection\Definition;
 
 class ClassReconstitutorPass implements CompilerPassInterface
 {
+    #[\Override]
     public function process(ContainerBuilder $container): void
     {
         $reconstitutorResolver = $container

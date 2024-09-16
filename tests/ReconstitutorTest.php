@@ -26,6 +26,7 @@ class ReconstitutorTest extends TestCase
 {
     private ?ContainerInterface $container = null;
 
+    #[\Override]
     public function setUp(): void
     {
         $kernel = new ReconstitutorKernel();

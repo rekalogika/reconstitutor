@@ -20,6 +20,7 @@ use Rekalogika\Reconstitutor\Tests\Model\Entity;
  */
 class EntityReconstitutor extends AbstractTestClassReconstitutor
 {
+    #[\Override]
     public static function getClass(): string
     {
         return Entity::class;

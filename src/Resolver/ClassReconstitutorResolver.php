@@ -40,6 +40,7 @@ final class ClassReconstitutorResolver implements ReconstitutorResolverInterface
     /**
      * @return iterable<int,ClassReconstitutorInterface<object>>
      */
+    #[\Override]
     public function getReconstitutors(object $object): iterable
     {
         $classes = self::getAllClasses($object);
