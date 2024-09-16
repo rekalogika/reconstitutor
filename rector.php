@@ -8,6 +8,7 @@ use Rector\CodingStyle\Rector\Catch_\CatchExceptionNameMatchingTypeRector;
 use Rector\CodingStyle\Rector\Use_\SeparateMultiUseImportsRector;
 use Rector\Config\RectorConfig;
 use Rector\DeadCode\Rector\Assign\RemoveUnusedVariableAssignRector;
+use Rector\DeadCode\Rector\ClassMethod\RemoveEmptyClassMethodRector;
 use Rector\DeadCode\Rector\ClassMethod\RemoveUnusedPrivateMethodParameterRector;
 use Rector\DeadCode\Rector\Node\RemoveNonExistingVarAnnotationRector;
 use Rector\Php81\Rector\Array_\FirstClassCallableRector;
@@ -17,17 +18,17 @@ use Rector\Strict\Rector\Ternary\DisallowedShortTernaryRuleFixerRector;
 use Rector\ValueObject\PhpVersion;
 
 return RectorConfig::configure()
-    ->withPhpVersion(PhpVersion::PHP_83)
+    ->withPhpVersion(PhpVersion::PHP_84)
     ->withPaths([
         __DIR__ . '/src',
         __DIR__ . '/config',
         __DIR__ . '/tests',
     ])
     ->withPreparedSets(
-        // deadCode: true,
-        // codeQuality: true,
-        // codingStyle: true,
-        // typeDeclarations: true,
+        deadCode: true,
+        codeQuality: true,
+        codingStyle: true,
+        typeDeclarations: true,
         // privatization: true,
         // instanceOf: true,
         // strictBooleans: true,
@@ -59,4 +60,7 @@ return RectorConfig::configure()
 
         // unsafe
         SeparateMultiUseImportsRector::class,
+
+        // incorrectly removes empty final __construct()
+        RemoveEmptyClassMethodRector::class,
     ]);

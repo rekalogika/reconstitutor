@@ -40,13 +40,13 @@ class ClassReconstitutorPass implements CompilerPassInterface
          */
         $classMap = [];
 
-        foreach ($classReconstitutors as $id => $service) {
+        foreach (array_keys($classReconstitutors) as $id) {
             $definition = $container->getDefinition($id);
             $reconstitutorClass = $definition->getClass();
             \assert(\is_string($reconstitutorClass));
             \assert(class_exists($reconstitutorClass));
 
-            if (!$r = $container->getReflectionClass($reconstitutorClass)) {
+            if (($r = $container->getReflectionClass($reconstitutorClass)) === null) {
                 throw new \InvalidArgumentException(\sprintf('Class "%s" used for service "%s" cannot be found.', $reconstitutorClass, $id));
             }
 
@@ -57,7 +57,7 @@ class ClassReconstitutorPass implements CompilerPassInterface
             $reconstitutorClass = $r->name;
             $targetClass = $reconstitutorClass::getClass();
 
-            if (!$r = $container->getReflectionClass($targetClass)) {
+            if (($r = $container->getReflectionClass($targetClass)) === null) {
                 throw new \InvalidArgumentException(\sprintf('Class "%s" used by reconstitutor "%s" cannot be found.', $targetClass, $reconstitutorClass));
             }
 
