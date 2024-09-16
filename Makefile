@@ -11,4 +11,4 @@ psalm:
 
 .PHONY: phpunit
 phpunit:
-	vendor/bin/phpunit --testdox -v
+	vendor/bin/phpunit
