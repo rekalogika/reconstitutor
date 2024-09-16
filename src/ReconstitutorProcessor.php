@@ -21,7 +21,7 @@ final class ReconstitutorProcessor
     /**
      * @param iterable<ReconstitutorResolverInterface> $resolvers
      */
-    public function __construct(private iterable $resolvers) {}
+    public function __construct(private readonly iterable $resolvers) {}
 
     /**
      * @return iterable<array-key,ReconstitutorInterface<object>>

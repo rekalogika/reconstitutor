@@ -29,7 +29,7 @@ final class ClassReconstitutorResolver implements ReconstitutorResolverInterface
     private static function getAllClasses(object $object): array
     {
         $classes = array_merge(
-            [\get_class($object)],
+            [$object::class],
             class_parents($object),
             class_implements($object),
         );
