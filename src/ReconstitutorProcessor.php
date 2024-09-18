@@ -13,9 +13,9 @@ declare(strict_types=1);
 
 namespace Rekalogika\Reconstitutor;
 
+use Doctrine\Persistence\Proxy;
 use Rekalogika\Reconstitutor\Contract\ReconstitutorInterface;
 use Rekalogika\Reconstitutor\Contract\ReconstitutorResolverInterface;
-use Symfony\Component\VarExporter\LazyObjectInterface;
 
 final class ReconstitutorProcessor
 {
@@ -50,10 +50,7 @@ final class ReconstitutorProcessor
 
     public function onSave(object $object): void
     {
-        if (
-            $object instanceof LazyObjectInterface
-            && !$object->isLazyObjectInitialized()
-        ) {
+        if ($object instanceof Proxy && !$object->__isInitialized()) {
             return;
         }
 
