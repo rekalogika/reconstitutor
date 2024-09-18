@@ -1,6 +1,6 @@
 # Changelog
 
-## 1.3.1
+## 1.3.2
 
 * fix: handle cases where an uninitialized proxy gets a `postFlush` event.
 
