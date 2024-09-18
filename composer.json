@@ -25,7 +25,8 @@
         "rekalogika/direct-property-access": "^1.1.2 || ^1.2",
         "symfony/config": "^6.0 || ^7.0",
         "symfony/dependency-injection": "^6.0 || ^7.0",
-        "symfony/http-kernel": "^6.0 || ^7.0"
+        "symfony/http-kernel": "^6.0 || ^7.0",
+        "symfony/var-exporter": "^6.4 || ^7.1"
     },
     "require-dev": {
         "phpstan/phpstan": "^1.12",
