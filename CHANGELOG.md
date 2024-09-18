@@ -1,8 +1,16 @@
 # Changelog
 
+## 1.3.1
+
+* fix: handle cases where an uninitialized proxy gets a `postFlush` event.
+
 ## 1.3.0
 
 * chore: php-cs-fixer run
+* feat: php 8.4 compatibility by @priyadi in #4
+* Create dependabot.yml by @priyadi in #5
+* chore: rectorization by @priyadi in #7
+
 
 ## 1.2.0
 
