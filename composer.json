@@ -36,10 +36,10 @@
         "psalm/plugin-phpunit": "^0.19.0",
         "psalm/plugin-symfony": "^5.0",
         "rector/rector": "^1.2",
-        "symfony/doctrine-bridge": "^7.1",
-        "symfony/framework-bundle": "^7.1",
+        "symfony/doctrine-bridge": "^6.0 || ^7.0",
+        "symfony/framework-bundle": "^6.0 || ^7.0",
         "symfony/phpunit-bridge": "^6.0 || ^7.0",
-        "symfony/yaml": "^7.1",
+        "symfony/yaml": "^6.0 || ^7.0",
         "vimeo/psalm": "^5.26",
         "zenstruck/foundry": "^2.0"
     },
