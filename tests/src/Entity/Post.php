@@ -13,6 +13,78 @@ declare(strict_types=1);
 
 namespace Rekalogika\Reconstitutor\Tests\Entity;
 
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
+use Doctrine\DBAL\Types\Types;
+use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Uid\Uuid;
+
+#[ORM\Entity()]
 final class Post
 {
+    #[ORM\Id]
+    #[ORM\Column(unique: true, nullable: false)]
+    private string $id;
+
+    /**
+     * @var Collection<string,Comment>
+     */
+    #[ORM\OneToMany(mappedBy: 'post', targetEntity: Comment::class)]
+    private Collection $comments;
+
+    #[ORM\Column(type: Types::BLOB, nullable: true)]
+    private ?string $image = null;
+
+    public function __construct(
+        #[ORM\Column(nullable: false)]
+        private string $title,
+    ) {
+        $this->id = Uuid::v7()->toRfc4122();
+        $this->comments = new ArrayCollection();
+    }
+
+    public function getId(): string
+    {
+        return $this->id;
+    }
+
+    /**
+     * @return Collection<string,Comment>
+     */
+    public function getComments(): Collection
+    {
+        return $this->comments;
+    }
+
+    public function addComment(Comment $comment): void
+    {
+        if (!$this->comments->contains($comment)) {
+            $comment->setPost($this);
+            $this->comments->add($comment);
+        }
+    }
+
+    public function removeComment(Comment $comment): void
+    {
+        $this->comments->removeElement($comment);
+
+        if ($comment->getPost() === $this) {
+            $comment->setPost(null);
+        }
+    }
+
+    public function getImage(): ?string
+    {
+        return $this->image;
+    }
+
+    public function setImage(?string $image): void
+    {
+        $this->image = $image;
+    }
+
+    public function getTitle(): string
+    {
+        return $this->title;
+    }
 }

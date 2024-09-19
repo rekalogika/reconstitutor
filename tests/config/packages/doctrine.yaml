@@ -2,7 +2,8 @@ doctrine:
     dbal:
         driver: pdo_sqlite
         charset: UTF8
-        path: '%kernel.project_dir%/var/data.db'
+        memory: true
+        use_savepoints: true
 
     orm:
         auto_generate_proxy_classes: true

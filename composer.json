@@ -39,6 +39,7 @@
         "symfony/doctrine-bridge": "^6.0 || ^7.0",
         "symfony/framework-bundle": "^6.0 || ^7.0",
         "symfony/phpunit-bridge": "^6.0 || ^7.0",
+        "symfony/uid": "^6.0 || ^7.0",
         "symfony/yaml": "^6.0 || ^7.0",
         "vimeo/psalm": "^5.26",
         "zenstruck/foundry": "^2.0"
