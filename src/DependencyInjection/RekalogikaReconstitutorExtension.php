@@ -29,7 +29,7 @@ class RekalogikaReconstitutorExtension extends Extension
     #[\Override]
     public function load(array $configs, ContainerBuilder $container): void
     {
-        $env = $container->getParameter('kernel.environment');
+        // $env = $container->getParameter('kernel.environment');
 
         $loader = new PhpFileLoader(
             $container,
@@ -37,9 +37,9 @@ class RekalogikaReconstitutorExtension extends Extension
         );
         $loader->load('services.php');
 
-        if ('test' === $env) {
-            $loader->load('services_test.php');
-        }
+        // if ('test' === $env) {
+        //     $loader->load('services_test.php');
+        // }
 
         $container
             ->registerForAutoconfiguration(ReconstitutorResolverInterface::class)

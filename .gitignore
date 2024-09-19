@@ -1,7 +1,6 @@
 composer.lock
 vendor
 .phpunit.cache
-var
 .php-cs-fixer.cache
 tools
 rector.log

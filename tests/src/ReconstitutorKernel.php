@@ -13,13 +13,21 @@ declare(strict_types=1);
 
 namespace Rekalogika\Reconstitutor\Tests;
 
+use Doctrine\Bundle\DoctrineBundle\DoctrineBundle;
 use Rekalogika\DirectPropertyAccess\RekalogikaDirectPropertyAccessBundle;
 use Rekalogika\Reconstitutor\RekalogikaReconstitutorBundle;
+use Symfony\Bundle\FrameworkBundle\FrameworkBundle;
+use Symfony\Bundle\FrameworkBundle\Kernel\MicroKernelTrait;
 use Symfony\Component\Config\Loader\LoaderInterface;
 use Symfony\Component\HttpKernel\Kernel;
+use Zenstruck\Foundry\ZenstruckFoundryBundle;
 
 class ReconstitutorKernel extends Kernel
 {
+    use MicroKernelTrait {
+        registerContainerConfiguration as private baseRegisterContainerConfiguration;
+    }
+
     public function __construct()
     {
         $this->environment = 'test';
@@ -31,11 +39,28 @@ class ReconstitutorKernel extends Kernel
     public function registerBundles(): iterable
     {
         return [
+            new FrameworkBundle(),
+            new DoctrineBundle(),
+            new ZenstruckFoundryBundle(),
             new RekalogikaDirectPropertyAccessBundle(),
             new RekalogikaReconstitutorBundle(),
         ];
     }
 
     #[\Override]
-    public function registerContainerConfiguration(LoaderInterface $loader): void {}
+    public function registerContainerConfiguration(LoaderInterface $loader): void
+    {
+        $this->baseRegisterContainerConfiguration($loader);
+    }
+
+    #[\Override]
+    public function getProjectDir(): string
+    {
+        return __DIR__ . '/../';
+    }
+
+    public function getConfigDir(): string
+    {
+        return __DIR__ . '/../config/';
+    }
 }

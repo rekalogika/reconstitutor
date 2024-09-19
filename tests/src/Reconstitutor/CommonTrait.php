@@ -13,9 +13,14 @@ declare(strict_types=1);
 
 namespace Rekalogika\Reconstitutor\Tests\Reconstitutor;
 
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
+
 trait CommonTrait
 {
-    final public function __construct(private string $fileStorage) {}
+    final public function __construct(
+        #[Autowire('%rekalogika.reconstitutor.storage%')]
+        private string $fileStorage,
+    ) {}
 
     public function onSave(object $object): void
     {

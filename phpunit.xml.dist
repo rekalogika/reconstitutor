@@ -10,6 +10,12 @@
         cacheDirectory=".phpunit.cache"
         beStrictAboutCoverageMetadata="true">
 
+    <php>
+        <server
+                name="KERNEL_CLASS"
+                value="Rekalogika\Reconstitutor\Tests\ReconstitutorKernel" />
+    </php>
+
     <testsuites>
         <testsuite name="default">
             <directory>tests</directory>

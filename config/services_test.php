@@ -24,55 +24,55 @@ use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigura
 return static function (ContainerConfigurator $containerConfigurator): void {
     $services = $containerConfigurator->services();
 
-    $services->alias(
-        'test.' . ClassReconstitutorResolver::class,
-        ClassReconstitutorResolver::class,
-    )->public();
+    // $services->alias(
+    //     'test.' . ClassReconstitutorResolver::class,
+    //     ClassReconstitutorResolver::class,
+    // )->public();
 
-    $services->alias(
-        'test.' . AttributeReconstitutorResolver::class,
-        AttributeReconstitutorResolver::class,
-    )->public();
+    // $services->alias(
+    //     'test.' . AttributeReconstitutorResolver::class,
+    //     AttributeReconstitutorResolver::class,
+    // )->public();
 
-    $services->alias(
-        'test.' . ReconstitutorProcessor::class,
-        ReconstitutorProcessor::class,
-    )->public();
+    // $services->alias(
+    //     'test.' . ReconstitutorProcessor::class,
+    //     ReconstitutorProcessor::class,
+    // )->public();
 
-    $services->alias(
-        'test.' . DoctrineListener::class,
-        DoctrineListener::class,
-    )->public();
+    // $services->alias(
+    //     'test.' . DoctrineListener::class,
+    //     DoctrineListener::class,
+    // )->public();
 
-    if (class_exists(EntityReconstitutor::class)) {
-        $services->set(EntityReconstitutor::class)
-            ->args([
-                __DIR__ . '/../var/storage.txt',
-            ])
-            ->tag('rekalogika.reconstitutor.class');
-    }
+    // if (class_exists(EntityReconstitutor::class)) {
+    //     $services->set(EntityReconstitutor::class)
+    //         ->args([
+    //             __DIR__ . '/../var/storage.txt',
+    //         ])
+    //         ->tag('rekalogika.reconstitutor.class');
+    // }
 
-    if (class_exists(InterfaceReconstitutor::class)) {
-        $services->set(InterfaceReconstitutor::class)
-            ->args([
-                __DIR__ . '/../var/storage.txt',
-            ])
-            ->tag('rekalogika.reconstitutor.class');
-    }
+    // if (class_exists(InterfaceReconstitutor::class)) {
+    //     $services->set(InterfaceReconstitutor::class)
+    //         ->args([
+    //             __DIR__ . '/../var/storage.txt',
+    //         ])
+    //         ->tag('rekalogika.reconstitutor.class');
+    // }
 
-    if (class_exists(SuperclassReconstitutor::class)) {
-        $services->set(SuperclassReconstitutor::class)
-            ->args([
-                __DIR__ . '/../var/storage.txt',
-            ])
-            ->tag('rekalogika.reconstitutor.class');
-    }
+    // if (class_exists(SuperclassReconstitutor::class)) {
+    //     $services->set(SuperclassReconstitutor::class)
+    //         ->args([
+    //             __DIR__ . '/../var/storage.txt',
+    //         ])
+    //         ->tag('rekalogika.reconstitutor.class');
+    // }
 
-    if (class_exists(AttributeReconstitutor::class)) {
-        $services->set(AttributeReconstitutor::class)
-            ->args([
-                __DIR__ . '/../var/storage.txt',
-            ])
-            ->tag('rekalogika.reconstitutor.attribute');
-    }
+    // if (class_exists(AttributeReconstitutor::class)) {
+    //     $services->set(AttributeReconstitutor::class)
+    //         ->args([
+    //             __DIR__ . '/../var/storage.txt',
+    //         ])
+    //         ->tag('rekalogika.reconstitutor.attribute');
+    // }
 };
