@@ -65,7 +65,7 @@ class ReconstitutorTest extends TestCase
      */
     private function testOne(string $entityClass): void
     {
-        $tmp = __DIR__ . '/../var/storage.txt';
+        $tmp = __DIR__ . '/../../var/storage.txt';
         if (file_exists($tmp)) {
             unlink($tmp);
         }
