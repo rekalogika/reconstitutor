@@ -15,12 +15,11 @@ namespace Rekalogika\Reconstitutor\Tests\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
-use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Uuid;
 
 #[ORM\Entity()]
-final class Post
+class Post
 {
     #[ORM\Id]
     #[ORM\Column(unique: true, nullable: false)]
@@ -29,17 +28,16 @@ final class Post
     /**
      * @var Collection<string,Comment>
      */
-    #[ORM\OneToMany(mappedBy: 'post', targetEntity: Comment::class)]
+    #[ORM\OneToMany(mappedBy: 'post', targetEntity: Comment::class, fetch: 'EXTRA_LAZY')]
     private Collection $comments;
 
-    #[ORM\Column(type: Types::BLOB, nullable: true)]
     private ?string $image = null;
 
     public function __construct(
         #[ORM\Column(nullable: false)]
         private string $title,
     ) {
-        $this->id = Uuid::v7()->toRfc4122();
+        $this->id = Uuid::v6()->toRfc4122();
         $this->comments = new ArrayCollection();
     }
 

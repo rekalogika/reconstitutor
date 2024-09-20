@@ -8,3 +8,5 @@ framework:
     php_errors:
         throw: true
         log: true
+    uid:
+        default_uuid_version: 7

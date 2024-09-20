@@ -18,7 +18,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Uuid;
 
 #[ORM\Entity()]
-final class Comment
+class Comment
 {
     #[ORM\Id]
     #[ORM\Column(unique: true, nullable: false)]
@@ -27,14 +27,14 @@ final class Comment
     #[ORM\Column(type: Types::BLOB, nullable: true)]
     private ?string $avatar = null;
 
-    #[ORM\ManyToOne(targetEntity: Post::class, inversedBy: 'comments')]
+    #[ORM\ManyToOne(targetEntity: Post::class, inversedBy: 'comments', fetch: 'EXTRA_LAZY')]
     private ?Post $post = null;
 
     public function __construct(
         #[ORM\Column(nullable: false)]
         private string $content,
     ) {
-        $this->id = Uuid::v7()->toRfc4122();
+        $this->id = Uuid::v6()->toRfc4122();
     }
 
     public function getId(): string

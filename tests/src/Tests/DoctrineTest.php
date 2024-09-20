@@ -15,6 +15,7 @@ namespace Rekalogika\Reconstitutor\Tests\Tests;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Tools\SchemaTool;
+use Doctrine\Persistence\Proxy;
 use Rekalogika\Reconstitutor\Tests\Entity\Comment;
 use Rekalogika\Reconstitutor\Tests\Entity\Post;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
@@ -37,18 +38,105 @@ class DoctrineTest extends KernelTestCase
 
     public function testPost(): void
     {
+        // create the entities
         $post = new Post('title');
+        $post->setImage('someImage');
         $comment = new Comment('content');
         $post->addComment($comment);
         $this->entityManager->persist($post);
         $this->entityManager->persist($comment);
         $this->entityManager->flush();
+
+        // clear
         $this->entityManager->clear();
 
+        // reload from database
         $id = $post->getId();
-
         $post = $this->entityManager->find(Post::class, $id);
         $this->assertInstanceOf(Post::class, $post);
+        $this->assertSame('title', $post->getTitle());
+        $this->assertSame('someImage', $post->getImage());
         $this->assertCount(1, $post->getComments());
+
+        // remove image
+        $post->setImage(null);
+        $this->entityManager->flush();
+
+        // clear
+        $this->entityManager->clear();
+
+        // reload from database
+        $post = $this->entityManager->find(Post::class, $id);
+        $this->assertInstanceOf(Post::class, $post);
+        $this->assertSame('title', $post->getTitle());
+        $this->assertNull($post->getImage());
+        $this->assertCount(1, $post->getComments());
+    }
+
+    public function testProxy(): void
+    {
+        // create the entities
+        $post = new Post('title');
+        $post->setImage('someImage');
+        $this->entityManager->persist($post);
+        $this->entityManager->flush();
+
+        // clear
+        $this->entityManager->clear();
+
+        // reload from database
+        $post = $this->entityManager->getReference(Post::class, $post->getId());
+        $this->assertInstanceOf(Post::class, $post);
+        $this->assertInstanceOf(Proxy::class, $post);
+        $this->assertFalse($post->__isInitialized());
+
+        // should be true. see https://github.com/doctrine/orm/pull/11606
+        // remove this when upstream fixes the problem
+        $post->getImage();
+        $this->assertFalse($post->__isInitialized());
+
+        $post->getTitle();
+        $this->assertTrue($post->__isInitialized());
+
+        $this->assertEquals('someImage', $post->getImage());
+    }
+
+    public function testUninitializedProxyFlush(): void
+    {
+        // create the entities
+        $post = new Post('title');
+        $post->setImage('someImage');
+        $this->entityManager->persist($post);
+        $this->entityManager->flush();
+
+        // clear
+        $this->entityManager->clear();
+
+        // reload from database
+        $post = $this->entityManager->getReference(Post::class, $post->getId());
+        $this->assertInstanceOf(Post::class, $post);
+        $this->assertInstanceOf(Proxy::class, $post);
+        $this->assertFalse($post->__isInitialized());
+        $this->entityManager->flush();
+
+        // clear
+        $this->entityManager->clear();
+
+        // reload from database
+        $post = $this->entityManager->getReference(Post::class, $post->getId());
+        $this->assertInstanceOf(Post::class, $post);
+        $this->assertInstanceOf(Proxy::class, $post);
+        $this->assertFalse($post->__isInitialized());
+        $this->entityManager->flush();
+
+        // should be true. see https://github.com/doctrine/orm/pull/11606
+        // remove this when upstream fixes the problem
+        $post->getImage();
+        $this->assertFalse($post->__isInitialized());
+
+        $post->getTitle();
+        $this->assertTrue($post->__isInitialized());
+
+        $this->assertEquals('someImage', $post->getImage());
     }
 }

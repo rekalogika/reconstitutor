@@ -3,7 +3,7 @@ test: phpstan psalm phpunit
 
 .PHONY: clean
 clean:
-	rm -rf var/cache/*
+	rm -rf tests/var/cache/*
 
 .PHONY: phpstan
 phpstan:
