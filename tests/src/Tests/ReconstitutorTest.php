@@ -11,30 +11,18 @@ declare(strict_types=1);
  * that was distributed with this source code.
  */
 
-namespace Rekalogika\Reconstitutor\Tests;
+namespace Rekalogika\Reconstitutor\Tests\Tests;
 
-use PHPUnit\Framework\TestCase;
-use Psr\Container\ContainerInterface;
 use Rekalogika\Reconstitutor\ReconstitutorProcessor;
 use Rekalogika\Reconstitutor\Tests\Model\Entity;
 use Rekalogika\Reconstitutor\Tests\Model\EntityExtendingAbstractStub;
 use Rekalogika\Reconstitutor\Tests\Model\EntityImplementingStubInterface;
 use Rekalogika\Reconstitutor\Tests\Model\EntityWithAttribute;
 use Rekalogika\Reconstitutor\Tests\Model\EntityWithAttributeSubclass;
+use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
-class ReconstitutorTest extends TestCase
+class ReconstitutorTest extends KernelTestCase
 {
-    private ?ContainerInterface $container = null;
-
-    #[\Override]
-    protected function setUp(): void
-    {
-        $kernel = new ReconstitutorKernel();
-        $kernel->boot();
-
-        $this->container = $kernel->getContainer();
-    }
-
     public function testClassReconstitutor(): void
     {
         $this->testOne(Entity::class);
@@ -65,12 +53,14 @@ class ReconstitutorTest extends TestCase
      */
     private function testOne(string $entityClass): void
     {
-        $tmp = __DIR__ . '/../var/storage.txt';
+        $tmp = __DIR__ . '/../../var/storage.txt';
         if (file_exists($tmp)) {
             unlink($tmp);
         }
 
-        $processor = $this->container?->get('test.' . ReconstitutorProcessor::class);
+        $container = static::getContainer();
+
+        $processor = $container->get(ReconstitutorProcessor::class);
         $this->assertInstanceOf(ReconstitutorProcessor::class, $processor);
 
         // test create and save

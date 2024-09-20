@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.4.0
+
+* test: use full Symfony framework-bundle for testing
+
 ## 1.3.2
 
 * fix: handle cases where an uninitialized proxy gets a `postFlush` event.

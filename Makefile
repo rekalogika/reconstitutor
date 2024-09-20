@@ -1,6 +1,10 @@
 .PHONY: test
 test: phpstan psalm phpunit
 
+.PHONY: clean
+clean:
+	rm -rf tests/var/cache/*
+
 .PHONY: phpstan
 phpstan:
 	vendor/bin/phpstan analyse

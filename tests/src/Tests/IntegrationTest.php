@@ -11,23 +11,24 @@ declare(strict_types=1);
  * that was distributed with this source code.
  */
 
-namespace Rekalogika\Reconstitutor\Tests;
+namespace Rekalogika\Reconstitutor\Tests\Tests;
 
-use PHPUnit\Framework\TestCase;
 use Rekalogika\Reconstitutor\Resolver\AttributeReconstitutorResolver;
 use Rekalogika\Reconstitutor\Resolver\ClassReconstitutorResolver;
+use Rekalogika\Reconstitutor\Tests\ReconstitutorKernel;
+use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
-class IntegrationTest extends TestCase
+class IntegrationTest extends KernelTestCase
 {
     public function testServiceWiring(): void
     {
         $kernel = new ReconstitutorKernel();
         $kernel->boot();
 
-        $container = $kernel->getContainer();
+        $container = static::getContainer();
 
         $classReconstitutorResolver = $container
-            ->get('test.' . ClassReconstitutorResolver::class);
+            ->get(ClassReconstitutorResolver::class);
 
         $this->assertInstanceOf(
             ClassReconstitutorResolver::class,
@@ -35,7 +36,7 @@ class IntegrationTest extends TestCase
         );
 
         $attributeReconstitutorResolver = $container
-            ->get('test.' . AttributeReconstitutorResolver::class);
+            ->get(AttributeReconstitutorResolver::class);
 
         $this->assertInstanceOf(
             AttributeReconstitutorResolver::class,
