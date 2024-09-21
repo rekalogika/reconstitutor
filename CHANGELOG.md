@@ -3,6 +3,7 @@
 ## 1.4.0
 
 * test: use full Symfony framework-bundle for testing
+* test: test new & legacy proxy
 
 ## 1.3.2
 

@@ -22,7 +22,6 @@
     ],
     "require": {
         "doctrine/orm": "^2.16 || ^3.0",
-        "doctrine/persistence": "^3.1",
         "rekalogika/direct-property-access": "^1.1.2 || ^1.2",
         "symfony/config": "^6.0 || ^7.0",
         "symfony/dependency-injection": "^6.0 || ^7.0",
@@ -30,8 +29,7 @@
     },
     "require-dev": {
         "doctrine/collections": "^2.2",
-        "doctrine/doctrine-bundle": "^2.13",
-        "doctrine/doctrine-fixtures-bundle": "^3.6",
+        "doctrine/doctrine-bundle": "^2.0",
         "phpstan/phpstan": "^1.12",
         "phpunit/phpunit": "^10.5",
         "psalm/plugin-phpunit": "^0.19.0",
