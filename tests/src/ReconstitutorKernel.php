@@ -41,7 +41,6 @@ class ReconstitutorKernel extends Kernel
         return [
             new FrameworkBundle(),
             new DoctrineBundle(),
-            new ZenstruckFoundryBundle(),
             new RekalogikaDirectPropertyAccessBundle(),
             new RekalogikaReconstitutorBundle(),
         ];

@@ -41,13 +41,7 @@
         "symfony/phpunit-bridge": "^6.0 || ^7.0",
         "symfony/uid": "^6.0 || ^7.0",
         "symfony/yaml": "^6.0 || ^7.0",
-        "vimeo/psalm": "^5.26",
-        "zenstruck/foundry": "^2.0"
-    },
-    "extra": {
-        "branch-alias": {
-            "dev-main": "1.0-dev"
-        }
+        "vimeo/psalm": "^5.26"
     },
     "config": {
         "sort-packages": true

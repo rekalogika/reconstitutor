@@ -4,6 +4,7 @@
 
 * test: use full Symfony framework-bundle for testing
 * test: test new & legacy proxy
+* deps: cleanup dependencies
 
 ## 1.3.2
 
