@@ -10,9 +10,11 @@ use Rector\Config\RectorConfig;
 use Rector\DeadCode\Rector\Assign\RemoveUnusedVariableAssignRector;
 use Rector\DeadCode\Rector\ClassMethod\RemoveEmptyClassMethodRector;
 use Rector\DeadCode\Rector\Node\RemoveNonExistingVarAnnotationRector;
+use Rector\Doctrine\CodeQuality\Rector\Property\ImproveDoctrineCollectionDocTypeInEntityRector;
 use Rector\Php83\Rector\ClassMethod\AddOverrideAttributeToOverriddenMethodsRector;
 use Rector\Strict\Rector\Ternary\DisallowedShortTernaryRuleFixerRector;
 use Rector\ValueObject\PhpVersion;
+
 
 return RectorConfig::configure()
     ->withPhpVersion(PhpVersion::PHP_84)
@@ -61,4 +63,7 @@ return RectorConfig::configure()
 
         // incorrectly removes empty final __construct()
         RemoveEmptyClassMethodRector::class,
+
+        // results in incorrect phpdoc
+        ImproveDoctrineCollectionDocTypeInEntityRector::class,
     ]);

@@ -23,10 +23,9 @@ use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
 final class DoctrineTest extends KernelTestCase
 {
-    protected EntityManagerInterface $entityManager;
+    private EntityManagerInterface $entityManager;
 
-    #[\Override]
-    public function setUp(): void
+    #[\Override]protected function setUp(): void
     {
         parent::setUp();
 
@@ -46,6 +45,7 @@ final class DoctrineTest extends KernelTestCase
         // create the entities
         $post = new Post('title');
         $post->setImage('someImage');
+
         $comment = new Comment('content');
         $post->addComment($comment);
         $this->entityManager->persist($post);
@@ -83,6 +83,7 @@ final class DoctrineTest extends KernelTestCase
         // create the entities
         $post = new Post('title');
         $post->setImage('someImage');
+
         $this->entityManager->persist($post);
         $this->entityManager->flush();
 
@@ -114,6 +115,7 @@ final class DoctrineTest extends KernelTestCase
         // create the entities
         $post = new Post('title');
         $post->setImage('someImage');
+
         $this->entityManager->persist($post);
         $this->entityManager->flush();
 
