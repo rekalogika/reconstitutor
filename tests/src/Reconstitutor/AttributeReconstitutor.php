@@ -16,7 +16,7 @@ namespace Rekalogika\Reconstitutor\Tests\Reconstitutor;
 use Rekalogika\Reconstitutor\AbstractAttributeReconstitutor;
 use Rekalogika\Reconstitutor\Tests\Model\StubAttribute;
 
-class AttributeReconstitutor extends AbstractAttributeReconstitutor
+final class AttributeReconstitutor extends AbstractAttributeReconstitutor
 {
     use CommonTrait;
 

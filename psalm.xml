@@ -24,6 +24,11 @@
                 <directory name="tests/src/Reconstitutor/"/>
             </errorLevel>
         </PropertyNotSetInConstructor>
+        <ClassMustBeFinal>
+            <errorLevel type="suppress">
+                <directory name="tests/src/Entity/"/>
+            </errorLevel>
+        </ClassMustBeFinal>
     </issueHandlers>
 
     <plugins>

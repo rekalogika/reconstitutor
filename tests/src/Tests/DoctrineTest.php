@@ -14,16 +14,18 @@ declare(strict_types=1);
 namespace Rekalogika\Reconstitutor\Tests\Tests;
 
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\ORM\Tools\SchemaTool;
 use Doctrine\Persistence\Proxy;
 use Rekalogika\Reconstitutor\Tests\Entity\Comment;
 use Rekalogika\Reconstitutor\Tests\Entity\Post;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
-class DoctrineTest extends KernelTestCase
+final class DoctrineTest extends KernelTestCase
 {
     protected EntityManagerInterface $entityManager;
 
+    #[\Override]
     public function setUp(): void
     {
         parent::setUp();
@@ -32,8 +34,11 @@ class DoctrineTest extends KernelTestCase
         $this->assertInstanceOf(EntityManagerInterface::class, $entityManager);
         $this->entityManager = $entityManager;
 
+        /** @var list<ClassMetadata<object>> */
+        $allMetadatas = $this->entityManager->getMetadataFactory()->getAllMetadata();
+
         $schemaTool = new SchemaTool($entityManager);
-        $schemaTool->createSchema($entityManager->getMetadataFactory()->getAllMetadata());
+        $schemaTool->createSchema($allMetadatas);
     }
 
     public function testPost(): void
@@ -90,7 +95,7 @@ class DoctrineTest extends KernelTestCase
         $this->assertInstanceOf(Proxy::class, $post);
         $this->assertFalse($post->__isInitialized());
 
-        if (!\property_exists($post, '__initializer__')) {
+        if (!property_exists($post, '__initializer__')) {
             // lazy ghost proxy.
             // should be true. see https://github.com/doctrine/orm/pull/11606
             // remove this when upstream fixes the problem
@@ -133,7 +138,7 @@ class DoctrineTest extends KernelTestCase
         $this->assertInstanceOf(Proxy::class, $post);
         $this->assertFalse($post->__isInitialized());
 
-        if (!\property_exists($post, '__initializer__')) {
+        if (!property_exists($post, '__initializer__')) {
             // lazy ghost proxy.
             // should be true. see https://github.com/doctrine/orm/pull/11606
             // remove this when upstream fixes the problem

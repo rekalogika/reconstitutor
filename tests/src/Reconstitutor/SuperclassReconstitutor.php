@@ -18,7 +18,7 @@ use Rekalogika\Reconstitutor\Tests\Model\AbstractStub;
 /**
  * @extends AbstractTestClassReconstitutor<AbstractStub>
  */
-class SuperclassReconstitutor extends AbstractTestClassReconstitutor
+final class SuperclassReconstitutor extends AbstractTestClassReconstitutor
 {
     #[\Override]
     public static function getClass(): string

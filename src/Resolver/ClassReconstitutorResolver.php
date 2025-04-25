@@ -28,10 +28,24 @@ final class ClassReconstitutorResolver implements ReconstitutorResolverInterface
      */
     private function getAllClasses(object $object): array
     {
+        $parents = class_parents($object);
+
+        // @phpstan-ignore identical.alwaysFalse
+        if ($parents === false) {
+            throw new \LogicException('Failed to get class parents');
+        }
+
+        $implements = class_implements($object);
+
+        // @phpstan-ignore identical.alwaysFalse
+        if ($implements === false) {
+            throw new \LogicException('Failed to get class implements');
+        }
+
         $classes = array_merge(
             [$object::class],
-            class_parents($object),
-            class_implements($object),
+            $parents,
+            $implements,
         );
 
         return array_unique($classes);

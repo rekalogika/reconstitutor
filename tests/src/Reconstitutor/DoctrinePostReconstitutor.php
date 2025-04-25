@@ -19,18 +19,20 @@ use Rekalogika\Reconstitutor\Tests\Entity\Post;
 /**
  * @extends AbstractClassReconstitutor<Post>
  */
-class DoctrinePostReconstitutor extends AbstractClassReconstitutor
+final class DoctrinePostReconstitutor extends AbstractClassReconstitutor
 {
     /**
      * @var array<string,string>
      */
     private array $images = [];
 
+    #[\Override]
     public static function getClass(): string
     {
         return Post::class;
     }
 
+    #[\Override]
     public function onLoad(object $object): void
     {
         $image = $this->images[$object->getId()] ?? null;
@@ -38,6 +40,7 @@ class DoctrinePostReconstitutor extends AbstractClassReconstitutor
         $this->set($object, 'image', $image);
     }
 
+    #[\Override]
     public function onSave(object $object): void
     {
         $image = $this->get($object, 'image');
@@ -46,6 +49,7 @@ class DoctrinePostReconstitutor extends AbstractClassReconstitutor
         $this->images[$object->getId()] = $image;
     }
 
+    #[\Override]
     public function onRemove(object $object): void
     {
         unset($this->images[$object->getId()]);

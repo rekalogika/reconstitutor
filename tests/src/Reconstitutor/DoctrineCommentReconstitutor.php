@@ -19,18 +19,20 @@ use Rekalogika\Reconstitutor\Tests\Entity\Comment;
 /**
  * @extends AbstractClassReconstitutor<Comment>
  */
-class DoctrineCommentReconstitutor extends AbstractClassReconstitutor
+final class DoctrineCommentReconstitutor extends AbstractClassReconstitutor
 {
     /**
      * @var array<string,string>
      */
     private array $avatars = [];
 
+    #[\Override]
     public static function getClass(): string
     {
         return Comment::class;
     }
 
+    #[\Override]
     public function onLoad(object $object): void
     {
         $avatar = $this->avatars[$object->getId()] ?? null;
@@ -38,6 +40,7 @@ class DoctrineCommentReconstitutor extends AbstractClassReconstitutor
         $this->set($object, 'avatar', $avatar);
     }
 
+    #[\Override]
     public function onSave(object $object): void
     {
         $avatar = $this->get($object, 'avatar');
@@ -46,6 +49,7 @@ class DoctrineCommentReconstitutor extends AbstractClassReconstitutor
         $this->avatars[$object->getId()] = $avatar;
     }
 
+    #[\Override]
     public function onRemove(object $object): void
     {
         unset($this->avatars[$object->getId()]);

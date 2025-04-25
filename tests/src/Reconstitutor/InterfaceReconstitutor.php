@@ -18,7 +18,7 @@ use Rekalogika\Reconstitutor\Tests\Model\StubInterface;
 /**
  * @extends AbstractTestClassReconstitutor<StubInterface>
  */
-class InterfaceReconstitutor extends AbstractTestClassReconstitutor
+final class InterfaceReconstitutor extends AbstractTestClassReconstitutor
 {
     #[\Override]
     public static function getClass(): string

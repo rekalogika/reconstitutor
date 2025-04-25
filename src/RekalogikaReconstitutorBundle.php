@@ -18,7 +18,7 @@ use Rekalogika\Reconstitutor\DependencyInjection\ClassReconstitutorPass;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\HttpKernel\Bundle\Bundle;
 
-class RekalogikaReconstitutorBundle extends Bundle
+final class RekalogikaReconstitutorBundle extends Bundle
 {
     #[\Override]
     public function build(ContainerBuilder $container): void
