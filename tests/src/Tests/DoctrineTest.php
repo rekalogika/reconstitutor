@@ -20,10 +20,11 @@ use Rekalogika\Reconstitutor\Tests\Entity\Comment;
 use Rekalogika\Reconstitutor\Tests\Entity\Post;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
-class DoctrineTest extends KernelTestCase
+final class DoctrineTest extends KernelTestCase
 {
     protected EntityManagerInterface $entityManager;
 
+    #[\Override]
     public function setUp(): void
     {
         parent::setUp();
@@ -90,7 +91,7 @@ class DoctrineTest extends KernelTestCase
         $this->assertInstanceOf(Proxy::class, $post);
         $this->assertFalse($post->__isInitialized());
 
-        if (!\property_exists($post, '__initializer__')) {
+        if (!property_exists($post, '__initializer__')) {
             // lazy ghost proxy.
             // should be true. see https://github.com/doctrine/orm/pull/11606
             // remove this when upstream fixes the problem
@@ -133,7 +134,7 @@ class DoctrineTest extends KernelTestCase
         $this->assertInstanceOf(Proxy::class, $post);
         $this->assertFalse($post->__isInitialized());
 
-        if (!\property_exists($post, '__initializer__')) {
+        if (!property_exists($post, '__initializer__')) {
             // lazy ghost proxy.
             // should be true. see https://github.com/doctrine/orm/pull/11606
             // remove this when upstream fixes the problem

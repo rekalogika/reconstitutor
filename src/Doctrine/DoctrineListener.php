@@ -20,7 +20,7 @@ use Doctrine\ORM\Event\PostRemoveEventArgs;
 use Doctrine\ORM\Event\PrePersistEventArgs;
 use Rekalogika\Reconstitutor\ReconstitutorProcessor;
 
-class DoctrineListener
+final class DoctrineListener
 {
     public function __construct(private readonly ReconstitutorProcessor $processor) {}
 
@@ -46,6 +46,7 @@ class DoctrineListener
     {
         $em = $args->getObjectManager();
 
+        // @phpstan-ignore instanceof.alwaysTrue
         if (!$em instanceof EntityManagerInterface) {
             return;
         }

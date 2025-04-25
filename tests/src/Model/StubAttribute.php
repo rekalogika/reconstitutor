@@ -14,4 +14,4 @@ declare(strict_types=1);
 namespace Rekalogika\Reconstitutor\Tests\Model;
 
 #[\Attribute(\Attribute::TARGET_CLASS)]
-class StubAttribute {}
+final class StubAttribute {}

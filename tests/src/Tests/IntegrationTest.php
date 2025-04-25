@@ -18,7 +18,7 @@ use Rekalogika\Reconstitutor\Resolver\ClassReconstitutorResolver;
 use Rekalogika\Reconstitutor\Tests\ReconstitutorKernel;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
-class IntegrationTest extends KernelTestCase
+final class IntegrationTest extends KernelTestCase
 {
     public function testServiceWiring(): void
     {

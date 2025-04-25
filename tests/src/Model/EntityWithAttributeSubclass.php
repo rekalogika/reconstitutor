@@ -13,4 +13,4 @@ declare(strict_types=1);
 
 namespace Rekalogika\Reconstitutor\Tests\Model;
 
-class EntityWithAttributeSubclass extends EntityWithAttribute {}
+final class EntityWithAttributeSubclass extends EntityWithAttribute {}

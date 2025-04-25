@@ -21,7 +21,7 @@ use Rekalogika\Reconstitutor\Tests\Model\EntityWithAttribute;
 use Rekalogika\Reconstitutor\Tests\Model\EntityWithAttributeSubclass;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
-class ReconstitutorTest extends KernelTestCase
+final class ReconstitutorTest extends KernelTestCase
 {
     public function testClassReconstitutor(): void
     {

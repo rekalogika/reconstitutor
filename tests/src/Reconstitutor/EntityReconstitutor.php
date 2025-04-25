@@ -18,7 +18,7 @@ use Rekalogika\Reconstitutor\Tests\Model\Entity;
 /**
  * @extends AbstractTestClassReconstitutor<Entity>
  */
-class EntityReconstitutor extends AbstractTestClassReconstitutor
+final class EntityReconstitutor extends AbstractTestClassReconstitutor
 {
     #[\Override]
     public static function getClass(): string

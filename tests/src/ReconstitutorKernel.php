@@ -20,9 +20,8 @@ use Symfony\Bundle\FrameworkBundle\FrameworkBundle;
 use Symfony\Bundle\FrameworkBundle\Kernel\MicroKernelTrait;
 use Symfony\Component\Config\Loader\LoaderInterface;
 use Symfony\Component\HttpKernel\Kernel;
-use Zenstruck\Foundry\ZenstruckFoundryBundle;
 
-class ReconstitutorKernel extends Kernel
+final class ReconstitutorKernel extends Kernel
 {
     use MicroKernelTrait {
         registerContainerConfiguration as private baseRegisterContainerConfiguration;
