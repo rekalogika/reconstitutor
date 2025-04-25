@@ -1,5 +1,10 @@
 # Changelog
 
+# 1.5.0
+
+* chore: update to phpstan 2 and psalm 6
+* chore: rector run
+
 ## 1.4.0
 
 * test: use full Symfony framework-bundle for testing
