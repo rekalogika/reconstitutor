@@ -11,8 +11,8 @@ doctrine:
         # auto_mapping: true
         # enable_lazy_ghost_objects: true
         # report_fields_where_declared: true
-        # controller_resolver:
-        #     auto_mapping: false
+        controller_resolver:
+            auto_mapping: false
         mappings:
             Entity:
                 is_bundle: false

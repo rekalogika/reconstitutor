@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Rekalogika\Reconstitutor\Tests\Tests;
 
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\ORM\Tools\SchemaTool;
 use Doctrine\Persistence\Proxy;
 use Rekalogika\Reconstitutor\Tests\Entity\Comment;
@@ -33,8 +34,11 @@ final class DoctrineTest extends KernelTestCase
         $this->assertInstanceOf(EntityManagerInterface::class, $entityManager);
         $this->entityManager = $entityManager;
 
+        /** @var list<ClassMetadata<object>> */
+        $allMetadatas = $this->entityManager->getMetadataFactory()->getAllMetadata();
+
         $schemaTool = new SchemaTool($entityManager);
-        $schemaTool->createSchema($entityManager->getMetadataFactory()->getAllMetadata());
+        $schemaTool->createSchema($allMetadatas);
     }
 
     public function testPost(): void
