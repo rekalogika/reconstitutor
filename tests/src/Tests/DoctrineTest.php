@@ -98,7 +98,7 @@ final class DoctrineTest extends KernelTestCase
 
         if (!property_exists($post, '__initializer__')) {
             // lazy ghost proxy.
-            // should be true. see https://github.com/doctrine/orm/pull/11606
+            // should be true. see https://github.com/doctrine/orm/pull/11917
             // remove this when upstream fixes the problem
             $post->getImage();
             $this->assertFalse($post->__isInitialized());
@@ -142,7 +142,7 @@ final class DoctrineTest extends KernelTestCase
 
         if (!property_exists($post, '__initializer__')) {
             // lazy ghost proxy.
-            // should be true. see https://github.com/doctrine/orm/pull/11606
+            // should be true. see https://github.com/doctrine/orm/pull/11917
             // remove this when upstream fixes the problem
             $post->getImage();
             $this->assertFalse($post->__isInitialized());

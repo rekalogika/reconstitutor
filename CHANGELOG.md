@@ -4,6 +4,7 @@
 
 * chore: update to phpstan 2 and psalm 6
 * chore: rector run
+* chore: chore: update pending issue URL 
 
 ## 1.4.0
 
