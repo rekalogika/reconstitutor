@@ -16,23 +16,21 @@ namespace Rekalogika\Reconstitutor\DependencyInjection;
 use Rekalogika\DirectPropertyAccess\DirectPropertyAccessor;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
-use Symfony\Component\DependencyInjection\Definition;
 
 final class DirectPropertyAccessorAwarePass implements CompilerPassInterface
 {
+    public function __construct(
+        private string $tagName,
+    ) {}
+
     #[\Override]
     public function process(ContainerBuilder $container): void
     {
         $directPropertyAccessorAwares = $container
-            ->findTaggedServiceIds('rekalogika.reconstitutor.direct_property_accessor_aware', true);
+            ->findTaggedServiceIds($this->tagName, true);
 
         $directPropertyAccessor = $container
             ->findDefinition(DirectPropertyAccessor::class);
-
-        /**
-         * @var array<class-string,array<int,Definition>>
-         */
-        $classMap = [];
 
         foreach (array_keys($directPropertyAccessorAwares) as $id) {
             $definition = $container->getDefinition($id);

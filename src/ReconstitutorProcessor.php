@@ -42,7 +42,7 @@ final class ReconstitutorProcessor implements LoggerAwareInterface
     private function log(
         object $object,
         string $serviceId,
-        string $method
+        string $method,
     ): void {
         $this->logger?->debug(
             'Calling {method} of reconstitutor {serviceId} on {object}',
@@ -50,7 +50,7 @@ final class ReconstitutorProcessor implements LoggerAwareInterface
                 'method' => $method,
                 'serviceId' => $serviceId,
                 'object' => $object::class,
-            ]
+            ],
         );
     }
 
