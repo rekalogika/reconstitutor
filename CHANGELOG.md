@@ -7,6 +7,7 @@
 * refactor: change `ReconstitutorResolverInterface` to return service IDs
 * chore: rector run
 * perf: add caching for `ReconstitutorResolverInterface`
+* feat: add debug logging
 
 ## 1.4.0
 

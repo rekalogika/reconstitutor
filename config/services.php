@@ -64,7 +64,8 @@ return static function (ContainerConfigurator $containerConfigurator): void {
         ->args([
             service('rekalogika.reconstitutor.resolver.caching.inner'),
             service('rekalogika.reconstitutor.resolver.cache'),
-        ]);
+        ])
+    ;
 
     //
     // reconstitutor container
@@ -87,7 +88,10 @@ return static function (ContainerConfigurator $containerConfigurator): void {
         ->args([
             service('rekalogika.reconstitutor.resolver'),
             service('rekalogika.reconstitutor.container'),
-        ]);
+        ])
+        ->call('setLogger', [service('logger')->ignoreOnInvalid()])
+        ->tag('monolog.logger', ['channel' => 'rekalogika.reconstitutor'])
+    ;
 
     //
     // doctrine event listener
