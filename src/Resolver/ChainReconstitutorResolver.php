@@ -23,7 +23,7 @@ final class ChainReconstitutorResolver implements ReconstitutorResolverInterface
     public function __construct(private readonly iterable $resolvers) {}
 
     #[\Override]
-    public function getReconstitutors(string $class): iterable
+    public function getReconstitutors(string $class): array
     {
         $ids = [];
 
@@ -33,6 +33,6 @@ final class ChainReconstitutorResolver implements ReconstitutorResolverInterface
             }
         }
 
-        return array_unique($ids);
+        return array_values(array_unique($ids));
     }
 }

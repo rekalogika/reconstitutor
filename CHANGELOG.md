@@ -6,6 +6,7 @@
 * ci: remove tests for PHP 8.1
 * refactor: change `ReconstitutorResolverInterface` to return service IDs
 * chore: rector run
+* perf: add caching for `ReconstitutorResolverInterface`
 
 ## 1.4.0
 

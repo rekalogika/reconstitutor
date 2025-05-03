@@ -50,18 +50,17 @@ final class ClassReconstitutorResolver implements ReconstitutorResolverInterface
     }
 
     #[\Override]
-    public function getReconstitutors(string $class): iterable
+    public function getReconstitutors(string $class): array
     {
         $classes = $this->getAllClasses($class);
 
         $reconstitutors = [];
 
         foreach ($classes as $class) {
-            if (!isset($this->classMap[$class])) {
-                continue;
-            }
-
-            $reconstitutors = array_merge($reconstitutors, $this->classMap[$class]);
+            $reconstitutors = array_merge(
+                $reconstitutors,
+                $this->classMap[$class] ?? [],
+            );
         }
 
         return $reconstitutors;

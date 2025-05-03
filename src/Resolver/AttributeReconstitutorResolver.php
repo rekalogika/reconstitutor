@@ -23,7 +23,7 @@ final readonly class AttributeReconstitutorResolver implements ReconstitutorReso
     public function __construct(private array $classMap) {}
 
     #[\Override]
-    public function getReconstitutors(string $class): iterable
+    public function getReconstitutors(string $class): array
     {
         $reconstitutors = [];
         $reflectionClass = new \ReflectionClass($class);
@@ -33,8 +33,11 @@ final readonly class AttributeReconstitutorResolver implements ReconstitutorReso
 
             foreach ($attributes as $reflectionAttribute) {
                 $attributeClass = $reflectionAttribute->getName();
-                $reconstitutor = $this->classMap[$attributeClass] ?? [];
-                $reconstitutors += $reconstitutor;
+
+                $reconstitutors = array_merge(
+                    $reconstitutors,
+                    $this->classMap[$attributeClass] ?? [],
+                );
             }
 
             $reflectionClass = $reflectionClass->getParentClass();
