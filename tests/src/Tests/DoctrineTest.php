@@ -167,17 +167,12 @@ final class DoctrineTest extends KernelTestCase
 
         if (\PHP_VERSION_ID >= 80400) {
             $reflection = new \ReflectionClass($object);
+
             /**
              * @psalm-suppress UndefinedMethod
              */
-            $isProxy = $reflection->isUninitializedLazyObject($object);
-
-            if ($isProxy) {
-                /**
-                 * @psalm-suppress RedundantCondition
-                 * @phpstan-ignore method.alreadyNarrowedType
-                 */
-                $this->assertFalse($isProxy, 'Object is a proxy, but should not be');
+            if ($reflection->isUninitializedLazyObject($object)) {
+                static::fail('Object is a proxy, but should not be');
             }
         }
     }

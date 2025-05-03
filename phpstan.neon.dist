@@ -5,4 +5,7 @@ parameters:
         - config
         - tests/config
         - tests/src
-    ignoreErrors: []
+    ignoreErrors:
+        -
+            message: '#Call to an undefined method ReflectionClass<.*>::isUninitializedLazyObject#'
+            reportUnmatched: false
