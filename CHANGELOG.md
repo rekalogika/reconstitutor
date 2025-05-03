@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.0.0
+
+* refactor: move `DirectPropertyAccess` processing to separate compiler pass
+
 ## 1.4.0
 
 * test: use full Symfony framework-bundle for testing

@@ -15,6 +15,7 @@ namespace Rekalogika\Reconstitutor;
 
 use Rekalogika\Reconstitutor\DependencyInjection\AttributeReconstitutorPass;
 use Rekalogika\Reconstitutor\DependencyInjection\ClassReconstitutorPass;
+use Rekalogika\Reconstitutor\DependencyInjection\DirectPropertyAccessorAwarePass;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\HttpKernel\Bundle\Bundle;
 
@@ -27,6 +28,7 @@ final class RekalogikaReconstitutorBundle extends Bundle
 
         $container
             ->addCompilerPass(new ClassReconstitutorPass())
-            ->addCompilerPass(new AttributeReconstitutorPass());
+            ->addCompilerPass(new AttributeReconstitutorPass())
+            ->addCompilerPass(new DirectPropertyAccessorAwarePass());
     }
 }
