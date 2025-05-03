@@ -10,6 +10,7 @@
 * chore: chore: update pending issue URL
 * fix: depends on `doctrine/orm` version containing important bug fix
   https://github.com/doctrine/orm/pull/11917
+* ci: add recurring schedule
 
 ## 1.3.2
 
