@@ -15,6 +15,7 @@ use Rekalogika\Reconstitutor\Doctrine\DoctrineListener;
 use Rekalogika\Reconstitutor\ReconstitutorContainer;
 use Rekalogika\Reconstitutor\ReconstitutorProcessor;
 use Rekalogika\Reconstitutor\Resolver\AttributeReconstitutorResolver;
+use Rekalogika\Reconstitutor\Resolver\CachingReconstitutorResolver;
 use Rekalogika\Reconstitutor\Resolver\ChainReconstitutorResolver;
 use Rekalogika\Reconstitutor\Resolver\ClassReconstitutorResolver;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
@@ -45,6 +46,24 @@ return static function (ContainerConfigurator $containerConfigurator): void {
         ->class(ChainReconstitutorResolver::class)
         ->args([
             tagged_iterator('rekalogika.reconstitutor.resolver'),
+        ]);
+
+    //
+    // reconstitutor resolver caching
+    //
+
+    $services
+        ->set('rekalogika.reconstitutor.resolver.cache')
+        ->parent('cache.system')
+        ->tag('cache.pool');
+
+    $services
+        ->set('rekalogika.reconstitutor.resolver.caching')
+        ->class(CachingReconstitutorResolver::class)
+        ->decorate('rekalogika.reconstitutor.resolver')
+        ->args([
+            service('rekalogika.reconstitutor.resolver.caching.inner'),
+            service('rekalogika.reconstitutor.resolver.cache'),
         ]);
 
     //
