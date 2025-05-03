@@ -14,7 +14,6 @@ declare(strict_types=1);
 namespace Rekalogika\Reconstitutor\DependencyInjection;
 
 use Rekalogika\Reconstitutor\Contract\ClassReconstitutorInterface;
-use Rekalogika\Reconstitutor\Resolver\ClassReconstitutorResolver;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
@@ -25,7 +24,7 @@ final class ClassReconstitutorPass implements CompilerPassInterface
     public function process(ContainerBuilder $container): void
     {
         $reconstitutorResolver = $container
-            ->findDefinition(ClassReconstitutorResolver::class);
+            ->findDefinition('rekalogika.reconstitutor.resolver.class');
 
         $classReconstitutors = $container
             ->findTaggedServiceIds('rekalogika.reconstitutor.class', true);
@@ -56,7 +55,7 @@ final class ClassReconstitutorPass implements CompilerPassInterface
                 throw new \InvalidArgumentException(\sprintf('Class "%s" used by reconstitutor "%s" cannot be found.', $targetClass, $reconstitutorClass));
             }
 
-            $classMap[$targetClass][] = $definition;
+            $classMap[$targetClass][] = $id;
         }
 
         $reconstitutorResolver->setArgument('$classMap', $classMap);

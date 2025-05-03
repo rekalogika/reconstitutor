@@ -28,7 +28,7 @@ final class IntegrationTest extends KernelTestCase
         $container = static::getContainer();
 
         $classReconstitutorResolver = $container
-            ->get(ClassReconstitutorResolver::class);
+            ->get('rekalogika.reconstitutor.resolver.class');
 
         $this->assertInstanceOf(
             ClassReconstitutorResolver::class,
@@ -36,7 +36,7 @@ final class IntegrationTest extends KernelTestCase
         );
 
         $attributeReconstitutorResolver = $container
-            ->get(AttributeReconstitutorResolver::class);
+            ->get('rekalogika.reconstitutor.resolver.attribute');
 
         $this->assertInstanceOf(
             AttributeReconstitutorResolver::class,

@@ -60,7 +60,7 @@ final class ReconstitutorTest extends KernelTestCase
 
         $container = static::getContainer();
 
-        $processor = $container->get(ReconstitutorProcessor::class);
+        $processor = $container->get('rekalogika.reconstitutor.processor');
         $this->assertInstanceOf(ReconstitutorProcessor::class, $processor);
 
         // test create and save

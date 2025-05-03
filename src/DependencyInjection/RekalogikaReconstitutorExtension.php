@@ -16,6 +16,7 @@ namespace Rekalogika\Reconstitutor\DependencyInjection;
 use Rekalogika\Reconstitutor\Contract\AttributeReconstitutorInterface;
 use Rekalogika\Reconstitutor\Contract\ClassReconstitutorInterface;
 use Rekalogika\Reconstitutor\Contract\DirectPropertyAccessorAwareInterface;
+use Rekalogika\Reconstitutor\Contract\ReconstitutorInterface;
 use Rekalogika\Reconstitutor\Contract\ReconstitutorResolverInterface;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -39,6 +40,10 @@ final class RekalogikaReconstitutorExtension extends Extension
         $container
             ->registerForAutoconfiguration(ReconstitutorResolverInterface::class)
             ->addTag('rekalogika.reconstitutor.resolver');
+
+        $container
+            ->registerForAutoconfiguration(ReconstitutorInterface::class)
+            ->addTag('rekalogika.reconstitutor');
 
         $container
             ->registerForAutoconfiguration(ClassReconstitutorInterface::class)

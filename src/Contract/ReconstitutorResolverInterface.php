@@ -21,7 +21,8 @@ interface ReconstitutorResolverInterface
     /**
      * Gets all the applicable reconstitutors for the provided object
      *
-     * @return iterable<int,ReconstitutorInterface<object>>
+     * @param class-string $class
+     * @return iterable<string> Service ID of reconstitutors
      */
-    public function getReconstitutors(object $object): iterable;
+    public function getReconstitutors(string $class): iterable;
 }

@@ -18,18 +18,20 @@ use Rekalogika\Reconstitutor\Contract\ReconstitutorResolverInterface;
 
 final class ReconstitutorProcessor
 {
-    /**
-     * @param iterable<ReconstitutorResolverInterface> $resolvers
-     */
-    public function __construct(private readonly iterable $resolvers) {}
+    public function __construct(
+        private readonly ReconstitutorResolverInterface $resolver,
+        private readonly ReconstitutorContainer $container,
+    ) {}
 
     /**
      * @return iterable<array-key,ReconstitutorInterface<object>>
      */
     private function getReconstitutors(object $object): iterable
     {
-        foreach ($this->resolvers as $resolver) {
-            yield from $resolver->getReconstitutors($object);
+        $serviceIds = $this->resolver->getReconstitutors($object::class);
+
+        foreach ($serviceIds as $serviceId) {
+            yield $this->container->get($serviceId);
         }
     }
 
