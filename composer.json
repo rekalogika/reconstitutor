@@ -43,6 +43,7 @@
         "symfony/debug-bundle": "^6.0 || ^7.0",
         "symfony/doctrine-bridge": "^6.0 || ^7.0",
         "symfony/framework-bundle": "^6.0 || ^7.0",
+        "symfony/monolog-bundle": "^3.0",
         "symfony/phpunit-bridge": "^6.0 || ^7.0",
         "symfony/runtime": "^6.2 || ^7.0",
         "symfony/uid": "^6.0 || ^7.0",

@@ -14,7 +14,7 @@ psalm:
 	vendor/bin/psalm
 
 .PHONY: phpunit
-phpunit:
+phpunit: clean
 	vendor/bin/phpunit
 
 .PHONY: php-cs-fixer

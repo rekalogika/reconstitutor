@@ -18,6 +18,7 @@ use Rekalogika\DirectPropertyAccess\RekalogikaDirectPropertyAccessBundle;
 use Rekalogika\Reconstitutor\RekalogikaReconstitutorBundle;
 use Symfony\Bundle\FrameworkBundle\FrameworkBundle;
 use Symfony\Bundle\FrameworkBundle\Kernel\MicroKernelTrait;
+use Symfony\Bundle\MonologBundle\MonologBundle;
 use Symfony\Component\Config\Loader\LoaderInterface;
 use Symfony\Component\HttpKernel\Kernel;
 
@@ -42,6 +43,7 @@ final class ReconstitutorKernel extends Kernel
             new DoctrineBundle(),
             new RekalogikaDirectPropertyAccessBundle(),
             new RekalogikaReconstitutorBundle(),
+            new MonologBundle(),
         ];
     }
 
