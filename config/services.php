@@ -74,9 +74,10 @@ return static function (ContainerConfigurator $containerConfigurator): void {
     $services
         ->set('rekalogika.reconstitutor.container')
         ->class(ReconstitutorContainer::class)
-        ->args([
-            tagged_locator('rekalogika.reconstitutor'),
-        ]);
+        ->args([[
+            tagged_locator('rekalogika.reconstitutor.attribute'),
+            tagged_locator('rekalogika.reconstitutor.class'),
+        ]]);
 
     //
     // reconstitutor processor

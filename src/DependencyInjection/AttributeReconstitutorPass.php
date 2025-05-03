@@ -20,14 +20,17 @@ use Symfony\Component\DependencyInjection\Definition;
 
 final class AttributeReconstitutorPass implements CompilerPassInterface
 {
+    public const TAG_NAME = 'rekalogika.reconstitutor.attribute';
+
     #[\Override]
     public function process(ContainerBuilder $container): void
     {
         $reconstitutorResolver = $container
             ->findDefinition('rekalogika.reconstitutor.resolver.attribute');
 
-        $attributeReconstitutors = $container
-            ->findTaggedServiceIds('rekalogika.reconstitutor.attribute', true);
+        $attributeReconstitutors = $container->findTaggedServiceIds(self::TAG_NAME, true);
+
+        (new DirectPropertyAccessorAwarePass(self::TAG_NAME))->process($container);
 
         /**
          * @var array<class-string,array<int,Definition>>

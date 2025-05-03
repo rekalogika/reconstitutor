@@ -5,6 +5,7 @@
 * build: add bin/console
 * test: ensure lazy ghost is always enabled on ORM 2.x
 * build: enable monologbundle
+* refactor: don't burden caller without autoconfiguration with additional tags
 
 ## 2.0.0
 

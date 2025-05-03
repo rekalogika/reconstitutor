@@ -18,8 +18,11 @@ use Rekalogika\Reconstitutor\Contract\ReconstitutorInterface;
 
 final class ReconstitutorContainer
 {
+    /**
+     * @param list<ContainerInterface> $containers
+     */
     public function __construct(
-        private readonly ContainerInterface $container,
+        private readonly array $containers,
     ) {}
 
     /**
@@ -27,13 +30,19 @@ final class ReconstitutorContainer
      */
     public function get(string $id): ReconstitutorInterface
     {
-        /** @psalm-suppress MixedAssignment */
-        $result = $this->container->get($id);
+        foreach ($this->containers as $container) {
+            if ($container->has($id)) {
+                /** @psalm-suppress MixedAssignment */
+                $result = $container->get($id);
 
-        if ($result instanceof ReconstitutorInterface) {
-            return $result;
+                if ($result instanceof ReconstitutorInterface) {
+                    return $result;
+                }
+
+                throw new \RuntimeException(\sprintf('Service "%s" is not a valid reconstitutor', $id));
+            }
         }
 
-        throw new \RuntimeException(\sprintf('Service "%s" is not a valid reconstitutor', $id));
+        throw new \RuntimeException(\sprintf('Service "%s" not found', $id));
     }
 }
