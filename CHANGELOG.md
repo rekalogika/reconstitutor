@@ -3,6 +3,7 @@
 ## 2.0.0
 
 * refactor: move `DirectPropertyAccess` processing to separate compiler pass
+* ci: remove tests for PHP 8.1
 
 ## 1.4.0
 
