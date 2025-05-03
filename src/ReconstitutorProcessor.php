@@ -45,7 +45,7 @@ final class ReconstitutorProcessor implements LoggerAwareInterface
         string $method
     ): void {
         $this->logger?->debug(
-            'Calling method {method} of reconstitutor {serviceId} on {object}',
+            'Calling {method} of reconstitutor {serviceId} on {object}',
             [
                 'method' => $method,
                 'serviceId' => $serviceId,
