@@ -4,6 +4,7 @@
 
 * build: add bin/console
 * test: ensure lazy ghost is always enabled on ORM 2.x
+* build: enable monologbundle
 
 ## 2.0.0
 
