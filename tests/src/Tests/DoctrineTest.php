@@ -25,7 +25,7 @@ final class DoctrineTest extends KernelTestCase
 {
     private EntityManagerInterface $entityManager;
 
-    #[\Override]protected function setUp(): void
+    #[\Override] protected function setUp(): void
     {
         parent::setUp();
 
@@ -94,9 +94,9 @@ final class DoctrineTest extends KernelTestCase
         $post = $this->entityManager->getReference(Post::class, $post->getId());
         $this->assertInstanceOf(Post::class, $post);
         $this->assertInstanceOf(Proxy::class, $post);
-        $this->assertFalse($post->__isInitialized());
+        $this->assertIsProxy($post);
         $this->assertEquals('someImage', $post->getImage());
-        $this->assertTrue($post->__isInitialized());
+        $this->assertNotProxy($post);
     }
 
     public function testUninitializedProxyFlush(): void
@@ -115,7 +115,7 @@ final class DoctrineTest extends KernelTestCase
         $post = $this->entityManager->getReference(Post::class, $post->getId());
         $this->assertInstanceOf(Post::class, $post);
         $this->assertInstanceOf(Proxy::class, $post);
-        $this->assertFalse($post->__isInitialized());
+        $this->assertIsProxy($post);
 
         // this flush should not remove the image
         $this->entityManager->flush();
@@ -127,10 +127,53 @@ final class DoctrineTest extends KernelTestCase
         $post = $this->entityManager->getReference(Post::class, $post->getId());
         $this->assertInstanceOf(Post::class, $post);
         $this->assertInstanceOf(Proxy::class, $post);
-        $this->assertFalse($post->__isInitialized());
+        $this->assertIsProxy($post);
 
         // make sure the flush did not remove the image
         $this->assertEquals('someImage', $post->getImage());
-        $this->assertTrue($post->__isInitialized());
+        $this->assertNotProxy($post);
+    }
+
+    protected function assertIsProxy(mixed $object): void
+    {
+        $this->assertIsObject($object, 'Expected an object');
+
+        if (\PHP_VERSION_ID >= 80400) {
+            $reflection = new \ReflectionClass($object);
+            /**
+             * @psalm-suppress UndefinedMethod
+             * @psalm-suppress MixedAssignment
+             */
+            $isProxy = $reflection->isUninitializedLazyObject($object);
+
+            if ($isProxy) {
+                return;
+            }
+        }
+
+        $this->assertInstanceOf(Proxy::class, $object, 'Object is not a proxy');
+        $this->assertFalse($object->__isInitialized(), 'Object is not an uninitialized proxy');
+    }
+
+    protected function assertNotProxy(mixed $object): void
+    {
+        $this->assertIsObject($object, 'Expected an object');
+
+        if ($object instanceof Proxy) {
+            $this->assertTrue($object->__isInitialized(), 'Object is a proxy, but should not be');
+
+            return;
+        }
+
+        if (\PHP_VERSION_ID >= 80400) {
+            $reflection = new \ReflectionClass($object);
+
+            /**
+             * @psalm-suppress UndefinedMethod
+             */
+            if ($reflection->isUninitializedLazyObject($object)) {
+                static::fail('Object is a proxy, but should not be');
+            }
+        }
     }
 }

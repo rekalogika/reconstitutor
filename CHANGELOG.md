@@ -12,6 +12,9 @@
   https://github.com/doctrine/orm/pull/11917
 * ci: add recurring schedule
 * deprecation: internalize `ReconstitutorResolverInterface`
+* feat: add native PHP 8.4 lazy object checking to anticipate its support in
+  Doctrine ORM in the future.
+* refactor: move proxy checking to `DoctrineListener`
 
 ## 1.3.2
 

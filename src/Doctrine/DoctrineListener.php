@@ -18,6 +18,7 @@ use Doctrine\ORM\Event\PostFlushEventArgs;
 use Doctrine\ORM\Event\PostLoadEventArgs;
 use Doctrine\ORM\Event\PostRemoveEventArgs;
 use Doctrine\ORM\Event\PrePersistEventArgs;
+use Doctrine\Persistence\Proxy;
 use Rekalogika\Reconstitutor\ReconstitutorProcessor;
 
 final class DoctrineListener
@@ -54,8 +55,26 @@ final class DoctrineListener
         $uow = $em->getUnitOfWork();
         foreach ($uow->getIdentityMap() as $entities) {
             foreach ($entities as $entity) {
+                // does not seem to be required in newer ORM versions, but we
+                // keep it as a safety measure
+                if ($this->isUninitializedProxy($entity)) {
+                    continue;
+                }
+
                 $this->processor->onSave($entity);
             }
         }
+    }
+
+    private function isUninitializedProxy(object $object): bool
+    {
+        /**
+         * @psalm-suppress UndefinedMethod
+         */
+        return ($object instanceof Proxy && !$object->__isInitialized())
+            || (
+                \PHP_VERSION_ID >= 80400
+                && (new \ReflectionClass($object))->isUninitializedLazyObject($object)
+            );
     }
 }
