@@ -68,6 +68,9 @@ final class DoctrineListener
 
     private function isUninitializedProxy(object $object): bool
     {
+        /**
+         * @psalm-suppress UndefinedMethod
+         */
         return ($object instanceof Proxy && !$object->__isInitialized())
             || (
                 \PHP_VERSION_ID >= 80400
