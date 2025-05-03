@@ -95,19 +95,8 @@ final class DoctrineTest extends KernelTestCase
         $this->assertInstanceOf(Post::class, $post);
         $this->assertInstanceOf(Proxy::class, $post);
         $this->assertFalse($post->__isInitialized());
-
-        if (!property_exists($post, '__initializer__')) {
-            // lazy ghost proxy.
-            // should be true. see https://github.com/doctrine/orm/pull/11917
-            // remove this when upstream fixes the problem
-            $post->getImage();
-            $this->assertFalse($post->__isInitialized());
-
-            $post->getTitle();
-            $this->assertTrue($post->__isInitialized());
-        }
-
         $this->assertEquals('someImage', $post->getImage());
+        $this->assertTrue($post->__isInitialized());
     }
 
     public function testUninitializedProxyFlush(): void
@@ -140,18 +129,8 @@ final class DoctrineTest extends KernelTestCase
         $this->assertInstanceOf(Proxy::class, $post);
         $this->assertFalse($post->__isInitialized());
 
-        if (!property_exists($post, '__initializer__')) {
-            // lazy ghost proxy.
-            // should be true. see https://github.com/doctrine/orm/pull/11917
-            // remove this when upstream fixes the problem
-            $post->getImage();
-            $this->assertFalse($post->__isInitialized());
-
-            $post->getTitle();
-            $this->assertTrue($post->__isInitialized());
-        }
-
         // make sure the flush did not remove the image
         $this->assertEquals('someImage', $post->getImage());
+        $this->assertTrue($post->__isInitialized());
     }
 }
