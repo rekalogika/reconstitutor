@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.0.1
+
+* build: add bin/console
+
 ## 2.0.0
 
 * refactor: move `DirectPropertyAccess` processing to separate compiler pass

@@ -43,11 +43,15 @@
         "symfony/doctrine-bridge": "^6.0 || ^7.0",
         "symfony/framework-bundle": "^6.0 || ^7.0",
         "symfony/phpunit-bridge": "^6.0 || ^7.0",
+        "symfony/runtime": "^6.2 || ^7.0",
         "symfony/uid": "^6.0 || ^7.0",
         "symfony/yaml": "^6.0 || ^7.0",
         "vimeo/psalm": "^6.0"
     },
     "config": {
-        "sort-packages": true
+        "sort-packages": true,
+        "allow-plugins": {
+            "symfony/runtime": true
+        }
     }
 }
