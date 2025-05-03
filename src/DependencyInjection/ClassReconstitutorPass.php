@@ -13,7 +13,9 @@ declare(strict_types=1);
 
 namespace Rekalogika\Reconstitutor\DependencyInjection;
 
+use Rekalogika\DirectPropertyAccess\DirectPropertyAccessor;
 use Rekalogika\Reconstitutor\Contract\ClassReconstitutorInterface;
+use Rekalogika\Reconstitutor\Contract\DirectPropertyAccessorAwareInterface;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
@@ -30,7 +32,8 @@ final class ClassReconstitutorPass implements CompilerPassInterface
 
         $classReconstitutors = $container->findTaggedServiceIds(self::TAG_NAME, true);
 
-        (new DirectPropertyAccessorAwarePass(self::TAG_NAME))->process($container);
+        $directPropertyAccessor = $container
+            ->findDefinition(DirectPropertyAccessor::class);
 
         /**
          * @var array<class-string,array<int,Definition>>
@@ -59,6 +62,15 @@ final class ClassReconstitutorPass implements CompilerPassInterface
             }
 
             $classMap[$targetClass][] = $id;
+
+            // inject direct property accessor if it asks for that
+
+            if (is_a($reconstitutorClass, DirectPropertyAccessorAwareInterface::class, true)) {
+                $definition->addMethodCall(
+                    'setDirectPropertyAccessor',
+                    [$directPropertyAccessor],
+                );
+            }
         }
 
         $reconstitutorResolver->setArgument('$classMap', $classMap);
