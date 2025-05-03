@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.0.2
+
+* fix: reconstitutor without implementing `DirectPropertyAccessAwareInterface`
+
 ## 2.0.1
 
 * build: add bin/console
