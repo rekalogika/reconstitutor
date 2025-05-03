@@ -20,7 +20,7 @@ final class ChainReconstitutorResolver implements ReconstitutorResolverInterface
     /**
      * @param iterable<ReconstitutorResolverInterface> $resolvers
      */
-    public function __construct(private iterable $resolvers) {}
+    public function __construct(private readonly iterable $resolvers) {}
 
     #[\Override]
     public function getReconstitutors(string $class): iterable

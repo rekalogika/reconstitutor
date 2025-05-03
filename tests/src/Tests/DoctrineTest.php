@@ -134,7 +134,7 @@ final class DoctrineTest extends KernelTestCase
         $this->assertNotProxy($post);
     }
 
-    protected function assertIsProxy(mixed $object): void
+    private function assertIsProxy(mixed $object): void
     {
         $this->assertIsObject($object, 'Expected an object');
 
@@ -155,7 +155,7 @@ final class DoctrineTest extends KernelTestCase
         $this->assertFalse($object->__isInitialized(), 'Object is not an uninitialized proxy');
     }
 
-    protected function assertNotProxy(mixed $object): void
+    private function assertNotProxy(mixed $object): void
     {
         $this->assertIsObject($object, 'Expected an object');
 
