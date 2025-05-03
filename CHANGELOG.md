@@ -3,6 +3,7 @@
 ## 2.0.1
 
 * build: add bin/console
+* test: ensure lazy ghost is always enabled on ORM 2.x
 
 ## 2.0.0
 
