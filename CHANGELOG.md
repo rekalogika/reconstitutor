@@ -1,16 +1,15 @@
 # Changelog
 
-# 1.5.0
-
-* chore: update to phpstan 2 and psalm 6
-* chore: rector run
-* chore: chore: update pending issue URL 
-
 ## 1.4.0
 
 * test: use full Symfony framework-bundle for testing
 * test: test new & legacy proxy
 * deps: cleanup dependencies
+* chore: update to phpstan 2 and psalm 6
+* chore: rector run
+* chore: chore: update pending issue URL
+* fix: depends on `doctrine/orm` version containing important bug fix
+  https://github.com/doctrine/orm/pull/11917
 
 ## 1.3.2
 
