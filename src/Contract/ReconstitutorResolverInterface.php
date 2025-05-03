@@ -13,6 +13,9 @@ declare(strict_types=1);
 
 namespace Rekalogika\Reconstitutor\Contract;
 
+/**
+ * @internal
+ */
 interface ReconstitutorResolverInterface
 {
     /**

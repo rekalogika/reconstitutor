@@ -11,6 +11,7 @@
 * fix: depends on `doctrine/orm` version containing important bug fix
   https://github.com/doctrine/orm/pull/11917
 * ci: add recurring schedule
+* deprecation: internalize `ReconstitutorResolverInterface`
 
 ## 1.3.2
 
