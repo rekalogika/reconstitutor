@@ -13,37 +13,35 @@ declare(strict_types=1);
 
 namespace Rekalogika\Reconstitutor\Resolver;
 
-use Rekalogika\Reconstitutor\Contract\ClassReconstitutorInterface;
 use Rekalogika\Reconstitutor\Contract\ReconstitutorResolverInterface;
 
 final class ClassReconstitutorResolver implements ReconstitutorResolverInterface
 {
     /**
-     * @param array<class-string,array<int,ClassReconstitutorInterface<object>>> $classMap
+     * @param array<class-string,list<string>> $classMap
      */
     public function __construct(private array $classMap) {}
 
     /**
+     * @param class-string $class
      * @return array<array-key,class-string>
      */
-    private function getAllClasses(object $object): array
+    private function getAllClasses(string $class): array
     {
-        $parents = class_parents($object);
+        $parents = class_parents($class);
 
-        // @phpstan-ignore identical.alwaysFalse
         if ($parents === false) {
             throw new \LogicException('Failed to get class parents');
         }
 
-        $implements = class_implements($object);
+        $implements = class_implements($class);
 
-        // @phpstan-ignore identical.alwaysFalse
         if ($implements === false) {
             throw new \LogicException('Failed to get class implements');
         }
 
         $classes = array_merge(
-            [$object::class],
+            [$class],
             $parents,
             $implements,
         );
@@ -51,13 +49,10 @@ final class ClassReconstitutorResolver implements ReconstitutorResolverInterface
         return array_unique($classes);
     }
 
-    /**
-     * @return iterable<int,ClassReconstitutorInterface<object>>
-     */
     #[\Override]
-    public function getReconstitutors(object $object): iterable
+    public function getReconstitutors(string $class): iterable
     {
-        $classes = $this->getAllClasses($object);
+        $classes = $this->getAllClasses($class);
 
         $reconstitutors = [];
 

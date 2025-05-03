@@ -4,6 +4,7 @@
 
 * refactor: move `DirectPropertyAccess` processing to separate compiler pass
 * ci: remove tests for PHP 8.1
+* refactor: change `ReconstitutorResolverInterface` to return service IDs
 
 ## 1.4.0
 

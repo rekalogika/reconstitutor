@@ -13,51 +13,33 @@ declare(strict_types=1);
 
 namespace Rekalogika\Reconstitutor\Resolver;
 
-use Rekalogika\Reconstitutor\Contract\AttributeReconstitutorInterface;
-use Rekalogika\Reconstitutor\Contract\ReconstitutorInterface;
 use Rekalogika\Reconstitutor\Contract\ReconstitutorResolverInterface;
 
-final class AttributeReconstitutorResolver implements ReconstitutorResolverInterface
+final readonly class AttributeReconstitutorResolver implements ReconstitutorResolverInterface
 {
     /**
-     * @var array<class-string,iterable<int,ReconstitutorInterface<object>>>
-     */
-    private array $cache = [];
-
-    /**
-     * @param array<class-string,array<int,AttributeReconstitutorInterface>> $classMap
+     * @param array<class-string,list<string>> $classMap
      */
     public function __construct(private array $classMap) {}
 
     #[\Override]
-    public function getReconstitutors(object $object): iterable
+    public function getReconstitutors(string $class): iterable
     {
-        $class = $object::class;
-
-        if (isset($this->cache[$class])) {
-            return $this->cache[$class];
-        }
-
         $reconstitutors = [];
-
         $reflectionClass = new \ReflectionClass($class);
+
         while ($reflectionClass instanceof \ReflectionClass) {
             $attributes = $reflectionClass->getAttributes();
 
             foreach ($attributes as $reflectionAttribute) {
                 $attributeClass = $reflectionAttribute->getName();
                 $reconstitutor = $this->classMap[$attributeClass] ?? [];
-
-                if (empty($reconstitutor)) {
-                    continue;
-                }
-
                 $reconstitutors += $reconstitutor;
             }
 
             $reflectionClass = $reflectionClass->getParentClass();
         }
 
-        return $this->cache[$class] = $reconstitutors;
+        return $reconstitutors;
     }
 }

@@ -24,7 +24,9 @@
         "php": "^8.2",
         "doctrine/orm": "^2.20.3 || ^3.3.3",
         "rekalogika/direct-property-access": "^1.1.2 || ^1.2",
+        "psr/container": "^2.0",
         "symfony/config": "^6.0 || ^7.0",
+        "symfony/cache": "^6.0 || ^7.0",
         "symfony/dependency-injection": "^6.1 || ^7.0",
         "symfony/http-kernel": "^6.0 || ^7.0"
     },
