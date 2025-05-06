@@ -11,7 +11,7 @@ phpstan:
 
 .PHONY: psalm
 psalm:
-	vendor/bin/psalm
+	vendor/bin/psalm --no-cache
 
 .PHONY: phpunit
 phpunit: clean

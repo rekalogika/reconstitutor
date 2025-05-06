@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.1.0
+
+* feat: object tracking. call `onSave` and `onRemove` only if we previously
+  called `onLoad` or `onCreate`.
+
 ## 2.0.2
 
 * fix: reconstitutor without implementing `DirectPropertyAccessAwareInterface`
