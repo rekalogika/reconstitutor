@@ -38,9 +38,9 @@ Heart of Software"*.
 * The `get()` and `set()` methods are forwarders to a custom implementation of
   Symfony's `PropertyAccessorInterface`. Therefore, you can use the same
   exceptions defined in `PropertyAccessorInterface`.
-* Abstracts all the peculiarities of Doctrine events and Unit of Work, so you
-  don't have to.
-* It has what we think is the correct behavior. It asks your reconstitutor to
+* Abstracts all the peculiarities of Doctrine events, unit of work, and proxy,
+  so you don't have to find out and deal with them yourself.
+* It has what we consider the correct behavior. It asks your reconstitutor to
   save only after Doctrine has successfully saved the object. It doesn't rely on
   Doctrine seeing the object being dirty before `flush()`-ing. i.e. your
   entities don't have to modify a Doctrine-managed property —like
