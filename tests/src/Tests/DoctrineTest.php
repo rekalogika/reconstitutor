@@ -93,13 +93,12 @@ final class DoctrineTest extends KernelTestCase
         // reload from database
         $post = $this->entityManager->getReference(Post::class, $post->getId());
         $this->assertInstanceOf(Post::class, $post);
-        $this->assertInstanceOf(Proxy::class, $post);
         $this->assertIsProxy($post);
         $this->assertEquals('someImage', $post->getImage());
         $this->assertNotProxy($post);
     }
 
-    public function testUninitializedProxyFlush(): void
+    public function testFlushUninitializedProxy(): void
     {
         // create the entities
         $post = new Post('title');
@@ -114,7 +113,6 @@ final class DoctrineTest extends KernelTestCase
         // reload from database
         $post = $this->entityManager->getReference(Post::class, $post->getId());
         $this->assertInstanceOf(Post::class, $post);
-        $this->assertInstanceOf(Proxy::class, $post);
         $this->assertIsProxy($post);
 
         // this flush should not remove the image
@@ -126,13 +124,45 @@ final class DoctrineTest extends KernelTestCase
         // reload from database
         $post = $this->entityManager->getReference(Post::class, $post->getId());
         $this->assertInstanceOf(Post::class, $post);
-        $this->assertInstanceOf(Proxy::class, $post);
         $this->assertIsProxy($post);
 
         // make sure the flush did not remove the image
         $this->assertEquals('someImage', $post->getImage());
         $this->assertNotProxy($post);
     }
+
+    public function testRemoveUninitializedProxy(): void
+    {
+        // create the entities
+        $post = new Post('title');
+        $post->setImage('someImage');
+
+        $this->entityManager->persist($post);
+        $this->entityManager->flush();
+
+        // clear
+        $this->entityManager->clear();
+
+        // reload from database
+        $post = $this->entityManager->getReference(Post::class, $post->getId());
+        $this->assertInstanceOf(Post::class, $post);
+        $this->assertIsProxy($post);
+
+        // remove the post
+        $this->entityManager->remove($post);
+        $this->entityManager->flush();
+
+        // clear
+        $this->entityManager->clear();
+
+        // try to reload from database
+        $post = $this->entityManager->find(Post::class, $post->getId());
+        $this->assertNull($post);
+    }
+
+    //
+    // assertions
+    //
 
     private function assertIsProxy(mixed $object): void
     {
