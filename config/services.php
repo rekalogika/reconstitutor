@@ -14,7 +14,7 @@ declare(strict_types=1);
 use Rekalogika\Reconstitutor\Doctrine\DoctrineListener;
 use Rekalogika\Reconstitutor\ReconstitutorContainer;
 use Rekalogika\Reconstitutor\ReconstitutorProcessor;
-use Rekalogika\Reconstitutor\Repository\ObjectRepository;
+use Rekalogika\Reconstitutor\Repository\RepositoryRegistry;
 use Rekalogika\Reconstitutor\Resolver\AttributeReconstitutorResolver;
 use Rekalogika\Reconstitutor\Resolver\CachingReconstitutorResolver;
 use Rekalogika\Reconstitutor\Resolver\ChainReconstitutorResolver;
@@ -100,8 +100,8 @@ return static function (ContainerConfigurator $containerConfigurator): void {
     //
 
     $services
-        ->set('rekalogika.reconstitutor.repository')
-        ->class(ObjectRepository::class)
+        ->set('rekalogika.reconstitutor.repository_registry')
+        ->class(RepositoryRegistry::class)
         ->tag('kernel.reset', [
             'method' => 'reset',
         ])
@@ -131,6 +131,6 @@ return static function (ContainerConfigurator $containerConfigurator): void {
         ])
         ->args([
             service('rekalogika.reconstitutor.processor'),
-            service('rekalogika.reconstitutor.repository'),
+            service('rekalogika.reconstitutor.repository_registry'),
         ]);
 };

@@ -17,7 +17,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\ORM\Tools\SchemaTool;
 use Doctrine\Persistence\Proxy;
-use Rekalogika\Reconstitutor\Repository\ObjectRepository;
+use Rekalogika\Reconstitutor\Repository\RepositoryRegistry;
 use Rekalogika\Reconstitutor\Tests\Entity\Comment;
 use Rekalogika\Reconstitutor\Tests\Entity\Post;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
@@ -25,7 +25,7 @@ use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 final class DoctrineTest extends KernelTestCase
 {
     private EntityManagerInterface $entityManager;
-    private ObjectRepository $objectRepository;
+    private RepositoryRegistry $registry;
 
     #[\Override] protected function setUp(): void
     {
@@ -35,9 +35,9 @@ final class DoctrineTest extends KernelTestCase
         $this->assertInstanceOf(EntityManagerInterface::class, $entityManager);
         $this->entityManager = $entityManager;
 
-        $objectRepository = static::getContainer()->get('rekalogika.reconstitutor.repository');
-        $this->assertInstanceOf(ObjectRepository::class, $objectRepository);
-        $this->objectRepository = $objectRepository;
+        $registry = static::getContainer()->get('rekalogika.reconstitutor.repository_registry');
+        $this->assertInstanceOf(RepositoryRegistry::class, $registry);
+        $this->registry = $registry;
 
         /** @var list<ClassMetadata<object>> */
         $allMetadatas = $this->entityManager->getMetadataFactory()->getAllMetadata();
@@ -172,11 +172,11 @@ final class DoctrineTest extends KernelTestCase
         $post = new Post('title');
         $post->setImage('someImage');
         $this->entityManager->persist($post);
-        $this->assertCount(1, $this->objectRepository);
+        $this->assertCount(1, $this->registry->get($this->entityManager));
 
         // clear
         $this->entityManager->clear();
-        $this->assertCount(0, $this->objectRepository);
+        $this->assertCount(0, $this->registry->get($this->entityManager));
     }
 
     //
