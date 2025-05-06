@@ -20,6 +20,7 @@ use Doctrine\Persistence\Proxy;
 use Rekalogika\Reconstitutor\Repository\RepositoryRegistry;
 use Rekalogika\Reconstitutor\Tests\Entity\Comment;
 use Rekalogika\Reconstitutor\Tests\Entity\Post;
+use Rekalogika\Reconstitutor\Tests\Reconstitutor\DoctrinePostReconstitutor;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
 final class DoctrineTest extends KernelTestCase
@@ -177,6 +178,13 @@ final class DoctrineTest extends KernelTestCase
         // clear
         $this->entityManager->clear();
         $this->assertCount(0, $this->registry->get($this->entityManager));
+
+        // check in reconstitutor
+        $reconstitutor = static::getContainer()
+            ->get(DoctrinePostReconstitutor::class);
+
+        $this->assertInstanceOf(DoctrinePostReconstitutor::class, $reconstitutor);
+        $this->assertTrue($reconstitutor->hasClearCalledOnObjectId($post->getId()));
     }
 
     //

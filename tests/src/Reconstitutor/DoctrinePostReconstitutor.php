@@ -26,6 +26,11 @@ final class DoctrinePostReconstitutor extends AbstractClassReconstitutor
      */
     private array $images = [];
 
+    /**
+     * @var list<string>
+     */
+    private array $clearCalledOnObjectIds = [];
+
     #[\Override]
     public static function getClass(): string
     {
@@ -53,5 +58,16 @@ final class DoctrinePostReconstitutor extends AbstractClassReconstitutor
     public function onRemove(object $object): void
     {
         unset($this->images[$object->getId()]);
+    }
+
+    #[\Override]
+    public function onClear(object $object): void
+    {
+        $this->clearCalledOnObjectIds[] = $object->getId();
+    }
+
+    public function hasClearCalledOnObjectId(string $objectId): bool
+    {
+        return \in_array($objectId, $this->clearCalledOnObjectIds, true);
     }
 }

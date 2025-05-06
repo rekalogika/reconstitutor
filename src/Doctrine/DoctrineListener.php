@@ -48,7 +48,7 @@ final class DoctrineListener
             return;
         }
 
-        // unlike onSave, we'll call onRemove even if the object is an
+        // unlike onSave, we'll call onRemove even if the object is in
         // uninitialized proxy
 
         $this->registry->get($objectManager)->remove($object);
@@ -90,6 +90,10 @@ final class DoctrineListener
     public function onClear(OnClearEventArgs $args): void
     {
         $objectManager = $args->getObjectManager();
+
+        foreach ($this->registry->get($objectManager) as $object) {
+            $this->processor->onClear($object);
+        }
 
         $this->registry->get($objectManager)->clear();
     }

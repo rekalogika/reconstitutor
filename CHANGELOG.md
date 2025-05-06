@@ -6,6 +6,7 @@
   called `onLoad` or `onCreate`.
 * fix: clear our repository when doctrine clears
 * refactor: simplify object repository
+* feat: `onClear` method
 
 ## 2.0.2
 

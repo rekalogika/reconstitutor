@@ -85,4 +85,12 @@ final class ReconstitutorProcessor implements LoggerAwareInterface
             $reconstitutor->onRemove($object);
         }
     }
+
+    public function onClear(object $object): void
+    {
+        foreach ($this->getReconstitutors($object) as [$id, $reconstitutor]) {
+            $this->log($object, $id, 'onClear');
+            $reconstitutor->onClear($object);
+        }
+    }
 }

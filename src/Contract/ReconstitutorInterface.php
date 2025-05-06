@@ -22,9 +22,8 @@ interface ReconstitutorInterface
     /**
      * Executed when the object is added to the persistence layer. e.g
      * Doctrine's EntityManager::persist(). Implementors should generally avoid
-     * using this method, and instead initialize the properties using a factory,
-     * otherwise the object might not be in a consistent state before it is
-     * persisted.
+     * using this method for initializing the object, and instead initialize the
+     * properties using a factory.
      *
      * @param T $object
      */
@@ -53,4 +52,12 @@ interface ReconstitutorInterface
      * @param T $object
      */
     public function onRemove(object $object): void;
+
+    /**
+     * Executed after the object is cleared from the persistence layer, e.g.
+     * Doctrine's EntityManager::clear()
+     *
+     * @param T $object
+     */
+    public function onClear(object $object): void;
 }
