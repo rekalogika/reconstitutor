@@ -4,6 +4,7 @@
 
 * feat: object tracking. call `onSave` and `onRemove` only if we previously
   called `onLoad` or `onCreate`.
+* fix: clear our repository when doctrine clears
 
 ## 2.0.2
 
