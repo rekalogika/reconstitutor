@@ -13,59 +13,85 @@ declare(strict_types=1);
 
 namespace Rekalogika\Reconstitutor\Doctrine;
 
-use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\Event\OnClearEventArgs;
 use Doctrine\ORM\Event\PostFlushEventArgs;
 use Doctrine\ORM\Event\PostLoadEventArgs;
 use Doctrine\ORM\Event\PostRemoveEventArgs;
 use Doctrine\ORM\Event\PrePersistEventArgs;
 use Doctrine\Persistence\Proxy;
 use Rekalogika\Reconstitutor\ReconstitutorProcessor;
+use Rekalogika\Reconstitutor\Repository\ObjectRepository;
 
 final class DoctrineListener
 {
     public function __construct(
         private readonly ReconstitutorProcessor $processor,
+        private readonly ObjectRepository $repository,
     ) {}
 
     public function prePersist(PrePersistEventArgs $args): void
     {
         $object = $args->getObject();
+        $objectManager = $args->getObjectManager();
+
+        $this->repository->add($object, $objectManager);
         $this->processor->onCreate($object);
     }
 
     public function postRemove(PostRemoveEventArgs $args): void
     {
         $object = $args->getObject();
+        $objectManager = $args->getObjectManager();
+
+        // do not call onRemove if we don't know anything about the object
+        if (!$this->repository->exists($object, $objectManager)) {
+            return;
+        }
+
+        // unlike onSave, we'll call onRemove even if the object is an
+        // uninitialized proxy
+
+        $this->repository->remove($object, $objectManager);
         $this->processor->onRemove($object);
     }
 
     public function postLoad(PostLoadEventArgs $args): void
     {
         $object = $args->getObject();
+        $objectManager = $args->getObjectManager();
+
+        $this->repository->add($object, $objectManager);
         $this->processor->onLoad($object);
     }
 
     public function postFlush(PostFlushEventArgs $args): void
     {
-        $em = $args->getObjectManager();
+        $objectManager = $args->getObjectManager();
 
-        // @phpstan-ignore instanceof.alwaysTrue
-        if (!$em instanceof EntityManagerInterface) {
-            return;
-        }
-
-        $uow = $em->getUnitOfWork();
-        foreach ($uow->getIdentityMap() as $entities) {
-            foreach ($entities as $entity) {
-                // does not seem to be required in newer ORM versions, but we
-                // keep it as a safety measure
-                if ($this->isUninitializedProxy($entity)) {
+        $unitOfWork = $objectManager->getUnitOfWork();
+        foreach ($unitOfWork->getIdentityMap() as $objects) {
+            foreach ($objects as $object) {
+                // do not call onSave if we don't know anything about the object
+                if (!$this->repository->exists($object, $objectManager)) {
                     continue;
                 }
 
-                $this->processor->onSave($entity);
+                // do not call onSave if the object is an uninitialized proxy.
+                // should never happen, but we check anyway as a safeguard.
+                if ($this->isUninitializedProxy($object)) {
+                    continue;
+                }
+
+                $this->processor->onSave($object);
             }
         }
+    }
+
+    public function onClear(OnClearEventArgs $args): void
+    {
+        $objectManager = $args->getObjectManager();
+
+        $this->repository->clear($objectManager);
     }
 
     private function isUninitializedProxy(object $object): bool

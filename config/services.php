@@ -126,6 +126,9 @@ return static function (ContainerConfigurator $containerConfigurator): void {
         ->tag('doctrine.event_listener', [
             'event' => 'postFlush',
         ])
+        ->tag('doctrine.event_listener', [
+            'event' => 'onClear',
+        ])
         ->args([
             service('rekalogika.reconstitutor.processor'),
             service('rekalogika.reconstitutor.repository'),

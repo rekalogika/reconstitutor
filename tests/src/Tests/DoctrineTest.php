@@ -17,6 +17,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\ORM\Tools\SchemaTool;
 use Doctrine\Persistence\Proxy;
+use Rekalogika\Reconstitutor\Repository\ObjectRepository;
 use Rekalogika\Reconstitutor\Tests\Entity\Comment;
 use Rekalogika\Reconstitutor\Tests\Entity\Post;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
@@ -24,6 +25,7 @@ use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 final class DoctrineTest extends KernelTestCase
 {
     private EntityManagerInterface $entityManager;
+    private ObjectRepository $objectRepository;
 
     #[\Override] protected function setUp(): void
     {
@@ -32,6 +34,10 @@ final class DoctrineTest extends KernelTestCase
         $entityManager = static::getContainer()->get(EntityManagerInterface::class);
         $this->assertInstanceOf(EntityManagerInterface::class, $entityManager);
         $this->entityManager = $entityManager;
+
+        $objectRepository = static::getContainer()->get('rekalogika.reconstitutor.repository');
+        $this->assertInstanceOf(ObjectRepository::class, $objectRepository);
+        $this->objectRepository = $objectRepository;
 
         /** @var list<ClassMetadata<object>> */
         $allMetadatas = $this->entityManager->getMetadataFactory()->getAllMetadata();
@@ -158,6 +164,19 @@ final class DoctrineTest extends KernelTestCase
         // try to reload from database
         $post = $this->entityManager->find(Post::class, $post->getId());
         $this->assertNull($post);
+    }
+
+    public function testClear(): void
+    {
+        // create the entities
+        $post = new Post('title');
+        $post->setImage('someImage');
+        $this->entityManager->persist($post);
+        $this->assertCount(1, $this->objectRepository);
+
+        // clear
+        $this->entityManager->clear();
+        $this->assertCount(0, $this->objectRepository);
     }
 
     //

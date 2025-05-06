@@ -16,7 +16,7 @@ namespace Rekalogika\Reconstitutor\Repository;
 use Doctrine\Persistence\ObjectManager;
 use Symfony\Contracts\Service\ResetInterface;
 
-final class ObjectRepository implements ResetInterface
+final class ObjectRepository implements ResetInterface, \Countable
 {
     /**
      * @var \WeakMap<object,ObjectManager>
@@ -31,6 +31,12 @@ final class ObjectRepository implements ResetInterface
     public function __construct()
     {
         $this->init();
+    }
+
+    #[\Override]
+    public function count(): int
+    {
+        return \count($this->objectToManager);
     }
 
     private function init(): void
@@ -48,6 +54,22 @@ final class ObjectRepository implements ResetInterface
     public function reset(): void
     {
         $this->init();
+    }
+
+    public function clear(ObjectManager $manager): void
+    {
+        if (!isset($this->managerToObjects[$manager])) {
+            return;
+        }
+
+        /** @var \WeakMap<object,true> */
+        $objectMap = $this->managerToObjects[$manager];
+
+        foreach ($objectMap as $object => $_) {
+            unset($this->objectToManager[$object]);
+        }
+
+        unset($this->managerToObjects[$manager]);
     }
 
     public function add(object $object, ObjectManager $manager): void
