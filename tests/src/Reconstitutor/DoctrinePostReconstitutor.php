@@ -70,4 +70,9 @@ final class DoctrinePostReconstitutor extends AbstractClassReconstitutor
     {
         return \in_array($objectId, $this->clearCalledOnObjectIds, true);
     }
+
+    public function isImageExists(string $objectId): bool
+    {
+        return isset($this->images[$objectId]);
+    }
 }

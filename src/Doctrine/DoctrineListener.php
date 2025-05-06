@@ -38,23 +38,6 @@ final class DoctrineListener
         $this->processor->onCreate($object);
     }
 
-    public function postRemove(PostRemoveEventArgs $args): void
-    {
-        $object = $args->getObject();
-        $objectManager = $args->getObjectManager();
-
-        // do not call onRemove if we don't know anything about the object
-        if (!$this->registry->get($objectManager)->exists($object)) {
-            return;
-        }
-
-        // unlike onSave, we'll call onRemove even if the object is in
-        // uninitialized proxy
-
-        $this->registry->get($objectManager)->remove($object);
-        $this->processor->onRemove($object);
-    }
-
     public function postLoad(PostLoadEventArgs $args): void
     {
         $object = $args->getObject();
@@ -67,17 +50,21 @@ final class DoctrineListener
     public function postFlush(PostFlushEventArgs $args): void
     {
         $objectManager = $args->getObjectManager();
-
         $unitOfWork = $objectManager->getUnitOfWork();
+
         foreach ($unitOfWork->getIdentityMap() as $objects) {
             foreach ($objects as $object) {
-                // do not call onSave if we don't know anything about the object
+                // do not call onSave if we don't know anything about the object,
+                // i.e. it is an uninitialized proxy, and therefore our stuff
+                // is not initialized yet.
+
                 if (!$this->registry->get($objectManager)->exists($object)) {
                     continue;
                 }
 
                 // do not call onSave if the object is an uninitialized proxy.
                 // should never happen, but we check anyway as a safeguard.
+
                 if ($this->isUninitializedProxy($object)) {
                     continue;
                 }
@@ -85,6 +72,19 @@ final class DoctrineListener
                 $this->processor->onSave($object);
             }
         }
+    }
+
+    public function postRemove(PostRemoveEventArgs $args): void
+    {
+        $object = $args->getObject();
+        $objectManager = $args->getObjectManager();
+
+        // unlike onSave, we'll call onRemove even if the object is an
+        // uninitialized proxy. i.e. prePersist or postLoad was not previously
+        // called on this object
+
+        $this->registry->get($objectManager)->remove($object);
+        $this->processor->onRemove($object);
     }
 
     public function onClear(OnClearEventArgs $args): void
