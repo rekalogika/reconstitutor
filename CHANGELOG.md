@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.2.0
+
+* fix: initialize object on `preRemove`
+
 ## 2.1.0
 
 * feat: object tracking. call `onSave` and `onRemove` only if we previously

@@ -18,6 +18,7 @@ use Doctrine\ORM\Event\PostFlushEventArgs;
 use Doctrine\ORM\Event\PostLoadEventArgs;
 use Doctrine\ORM\Event\PostRemoveEventArgs;
 use Doctrine\ORM\Event\PrePersistEventArgs;
+use Doctrine\ORM\Event\PreRemoveEventArgs;
 use Doctrine\Persistence\Proxy;
 use Rekalogika\Reconstitutor\ReconstitutorProcessor;
 use Rekalogika\Reconstitutor\Repository\RepositoryRegistry;
@@ -55,8 +56,7 @@ final class DoctrineListener
         foreach ($unitOfWork->getIdentityMap() as $objects) {
             foreach ($objects as $object) {
                 // do not call onSave if we don't know anything about the object,
-                // i.e. it is an uninitialized proxy, and therefore our stuff
-                // is not initialized yet.
+                // i.e. it is an uninitialized proxy
 
                 if (!$this->registry->get($objectManager)->exists($object)) {
                     continue;
@@ -74,14 +74,20 @@ final class DoctrineListener
         }
     }
 
+    public function preRemove(PreRemoveEventArgs $args): void
+    {
+        $object = $args->getObject();
+
+        // if the object being removed is a proxy, the `postRemove` event will
+        // contain an uninitializable proxy, unless we initialize it here first.
+
+        $this->initializeProxy($object);
+    }
+
     public function postRemove(PostRemoveEventArgs $args): void
     {
         $object = $args->getObject();
         $objectManager = $args->getObjectManager();
-
-        // unlike onSave, we'll call onRemove even if the object is an
-        // uninitialized proxy. i.e. prePersist or postLoad was not previously
-        // called on this object
 
         $this->registry->get($objectManager)->remove($object);
         $this->processor->onRemove($object);
@@ -108,5 +114,24 @@ final class DoctrineListener
                 \PHP_VERSION_ID >= 80400
                 && (new \ReflectionClass($object))->isUninitializedLazyObject($object)
             );
+    }
+
+    private function initializeProxy(object $object): void
+    {
+        if ($object instanceof Proxy) {
+            $object->__load();
+
+            return;
+        }
+
+        if (\PHP_VERSION_ID >= 80400) {
+            $reflection = new \ReflectionClass($object);
+
+            /** @psalm-suppress UndefinedMethod */
+            if ($reflection->isUninitializedLazyObject($object)) {
+                /** @psalm-suppress UndefinedMethod */
+                $reflection->initializeLazyObject($object);
+            }
+        }
     }
 }

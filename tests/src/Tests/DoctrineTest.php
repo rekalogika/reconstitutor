@@ -158,7 +158,12 @@ final class DoctrineTest extends KernelTestCase
 
         // remove the post
         $this->entityManager->remove($post);
+        $this->assertNotProxy($post);
+        $this->assertEquals($id, $post->getId());
+
         $this->entityManager->flush();
+        $this->assertNotProxy($post);
+        $this->assertEquals($id, $post->getId());
 
         // clear
         $this->entityManager->clear();
