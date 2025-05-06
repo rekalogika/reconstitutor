@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Rekalogika\Reconstitutor\Resolver;
 
 use Rekalogika\Reconstitutor\Contract\ReconstitutorResolverInterface;
+use Rekalogika\Reconstitutor\Exception\LogicException;
 
 final class ClassReconstitutorResolver implements ReconstitutorResolverInterface
 {
@@ -31,13 +32,13 @@ final class ClassReconstitutorResolver implements ReconstitutorResolverInterface
         $parents = class_parents($class);
 
         if ($parents === false) {
-            throw new \LogicException('Failed to get class parents');
+            throw new LogicException('Failed to get class parents');
         }
 
         $implements = class_implements($class);
 
         if ($implements === false) {
-            throw new \LogicException('Failed to get class implements');
+            throw new LogicException('Failed to get class implements');
         }
 
         $classes = array_merge(

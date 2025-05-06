@@ -16,6 +16,7 @@ namespace Rekalogika\Reconstitutor\DependencyInjection;
 use Rekalogika\DirectPropertyAccess\DirectPropertyAccessor;
 use Rekalogika\Reconstitutor\Contract\ClassReconstitutorInterface;
 use Rekalogika\Reconstitutor\Contract\DirectPropertyAccessorAwareInterface;
+use Rekalogika\Reconstitutor\Exception\InvalidArgumentException;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
@@ -47,18 +48,18 @@ final class ClassReconstitutorPass implements CompilerPassInterface
             \assert(class_exists($reconstitutorClass));
 
             if (($r = $container->getReflectionClass($reconstitutorClass)) === null) {
-                throw new \InvalidArgumentException(\sprintf('Class "%s" used for service "%s" cannot be found.', $reconstitutorClass, $id));
+                throw new InvalidArgumentException(\sprintf('Class "%s" used for service "%s" cannot be found.', $reconstitutorClass, $id));
             }
 
             if (!$r->isSubclassOf(ClassReconstitutorInterface::class)) {
-                throw new \InvalidArgumentException(\sprintf('Service "%s" must implement interface "%s".', $id, ClassReconstitutorInterface::class));
+                throw new InvalidArgumentException(\sprintf('Service "%s" must implement interface "%s".', $id, ClassReconstitutorInterface::class));
             }
 
             $reconstitutorClass = $r->name;
             $targetClass = $reconstitutorClass::getClass();
 
             if (($r = $container->getReflectionClass($targetClass)) === null) {
-                throw new \InvalidArgumentException(\sprintf('Class "%s" used by reconstitutor "%s" cannot be found.', $targetClass, $reconstitutorClass));
+                throw new InvalidArgumentException(\sprintf('Class "%s" used by reconstitutor "%s" cannot be found.', $targetClass, $reconstitutorClass));
             }
 
             $classMap[$targetClass][] = $id;

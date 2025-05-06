@@ -15,6 +15,7 @@ namespace Rekalogika\Reconstitutor;
 
 use Psr\Container\ContainerInterface;
 use Rekalogika\Reconstitutor\Contract\ReconstitutorInterface;
+use Rekalogika\Reconstitutor\Exception\RuntimeException;
 
 final class ReconstitutorContainer
 {
@@ -39,10 +40,10 @@ final class ReconstitutorContainer
                     return $result;
                 }
 
-                throw new \RuntimeException(\sprintf('Service "%s" is not a valid reconstitutor', $id));
+                throw new RuntimeException(\sprintf('Service "%s" is not a valid reconstitutor', $id));
             }
         }
 
-        throw new \RuntimeException(\sprintf('Service "%s" not found', $id));
+        throw new RuntimeException(\sprintf('Service "%s" not found', $id));
     }
 }

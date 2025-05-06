@@ -16,6 +16,7 @@ namespace Rekalogika\Reconstitutor\DependencyInjection;
 use Rekalogika\DirectPropertyAccess\DirectPropertyAccessor;
 use Rekalogika\Reconstitutor\Contract\AttributeReconstitutorInterface;
 use Rekalogika\Reconstitutor\Contract\DirectPropertyAccessorAwareInterface;
+use Rekalogika\Reconstitutor\Exception\InvalidArgumentException;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
@@ -47,7 +48,7 @@ final class AttributeReconstitutorPass implements CompilerPassInterface
             \assert(class_exists($reconstitutorClass));
 
             if (($r = $container->getReflectionClass($reconstitutorClass)) === null) {
-                throw new \InvalidArgumentException(\sprintf('Class "%s" used for service "%s" cannot be found.', $reconstitutorClass, $id));
+                throw new InvalidArgumentException(\sprintf('Class "%s" used for service "%s" cannot be found.', $reconstitutorClass, $id));
             }
 
             if ($r->isInterface()) {
@@ -55,14 +56,14 @@ final class AttributeReconstitutorPass implements CompilerPassInterface
             }
 
             if (!$r->isSubclassOf(AttributeReconstitutorInterface::class)) {
-                throw new \InvalidArgumentException(\sprintf('Service "%s" must implement interface "%s".', $id, AttributeReconstitutorInterface::class));
+                throw new InvalidArgumentException(\sprintf('Service "%s" must implement interface "%s".', $id, AttributeReconstitutorInterface::class));
             }
 
             $reconstitutorClass = $r->name;
             $targetClass = $reconstitutorClass::getAttributeClass();
 
             if (($r = $container->getReflectionClass($targetClass)) === null) {
-                throw new \InvalidArgumentException(\sprintf('Class "%s" used by reconstitutor "%s" cannot be found.', $targetClass, $reconstitutorClass));
+                throw new InvalidArgumentException(\sprintf('Class "%s" used by reconstitutor "%s" cannot be found.', $targetClass, $reconstitutorClass));
             }
 
             $classMap[$targetClass][] = $id;
