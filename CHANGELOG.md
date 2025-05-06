@@ -8,6 +8,7 @@
 * refactor: simplify object repository
 * feat: `onClear` method
 * refactor: refactor exception
+* fix: call `onRemove` if uninitialized
 
 ## 2.0.2
 

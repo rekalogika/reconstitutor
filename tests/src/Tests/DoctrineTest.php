@@ -143,6 +143,7 @@ final class DoctrineTest extends KernelTestCase
         // create the entities
         $post = new Post('title');
         $post->setImage('someImage');
+        $id = $post->getId();
 
         $this->entityManager->persist($post);
         $this->entityManager->flush();
@@ -165,6 +166,12 @@ final class DoctrineTest extends KernelTestCase
         // try to reload from database
         $post = $this->entityManager->find(Post::class, $post->getId());
         $this->assertNull($post);
+
+        // check in reconstitutor
+        $reconstitutor = static::getContainer()
+            ->get(DoctrinePostReconstitutor::class);
+        $this->assertInstanceOf(DoctrinePostReconstitutor::class, $reconstitutor);
+        $this->assertFalse($reconstitutor->isImageExists($id), 'Image should be removed');
     }
 
     public function testClear(): void
