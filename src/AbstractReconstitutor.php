@@ -30,4 +30,6 @@ abstract class AbstractReconstitutor implements DirectPropertyAccessorAwareInter
     public function onSave(object $object): void {}
 
     public function onRemove(object $object): void {}
+
+    public function onClear(object $object): void {}
 }
