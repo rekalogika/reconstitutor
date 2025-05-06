@@ -33,6 +33,7 @@ final class ObjectRepository implements ResetInterface, \Countable
         $this->init();
     }
 
+    #[\Override]
     public function count(): int
     {
         return \count($this->objectToManager);
