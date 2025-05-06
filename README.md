@@ -38,6 +38,8 @@ Heart of Software"*.
 * The `get()` and `set()` methods are forwarders to a custom implementation of
   Symfony's `PropertyAccessorInterface`. Therefore, you can use the same
   exceptions defined in `PropertyAccessorInterface`.
+* Abstracts all the peculiarities of Doctrine events and Unit of Work, so you
+  don't have to.
 * It has what we think is the correct behavior. It asks your reconstitutor to
   save only after Doctrine has successfully saved the object. It doesn't rely on
   Doctrine seeing the object being dirty before `flush()`-ing. i.e. your
@@ -51,6 +53,7 @@ A very simple file upload handling:
 ```php
 use Rekalogika\Reconstitutor\AbstractClassReconstitutor;
 use Symfony\Component\HttpFoundation\File\File;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 /**
  * @extends AbstractClassReconstitutor<Order>
@@ -69,6 +72,9 @@ final class OrderReconstitutor extends AbstractClassReconstitutor
     /**
      * When the object is being saved, we check if the paymentReceipt has been
      * just uploaded. If it is, we save it to a file.
+     * 
+     * Note: in Symfony, an uploaded file is represented by an instance of
+     * `UploadedFile`, otherwise it will be a `File` object.
      */
     public function onSave(object $order): void
     {

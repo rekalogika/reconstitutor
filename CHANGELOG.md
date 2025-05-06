@@ -7,6 +7,7 @@
 * fix: clear our repository when doctrine clears
 * refactor: simplify object repository
 * feat: `onClear` method
+* refactor: refactor exception
 
 ## 2.0.2
 
