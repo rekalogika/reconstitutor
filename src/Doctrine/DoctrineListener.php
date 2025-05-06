@@ -20,13 +20,13 @@ use Doctrine\ORM\Event\PostRemoveEventArgs;
 use Doctrine\ORM\Event\PrePersistEventArgs;
 use Doctrine\Persistence\Proxy;
 use Rekalogika\Reconstitutor\ReconstitutorProcessor;
-use Rekalogika\Reconstitutor\Repository\ObjectRepository;
+use Rekalogika\Reconstitutor\Repository\RepositoryRegistry;
 
 final class DoctrineListener
 {
     public function __construct(
         private readonly ReconstitutorProcessor $processor,
-        private readonly ObjectRepository $repository,
+        private readonly RepositoryRegistry $registry,
     ) {}
 
     public function prePersist(PrePersistEventArgs $args): void
@@ -34,7 +34,7 @@ final class DoctrineListener
         $object = $args->getObject();
         $objectManager = $args->getObjectManager();
 
-        $this->repository->add($object, $objectManager);
+        $this->registry->get($objectManager)->add($object);
         $this->processor->onCreate($object);
     }
 
@@ -44,14 +44,14 @@ final class DoctrineListener
         $objectManager = $args->getObjectManager();
 
         // do not call onRemove if we don't know anything about the object
-        if (!$this->repository->exists($object, $objectManager)) {
+        if (!$this->registry->get($objectManager)->exists($object)) {
             return;
         }
 
         // unlike onSave, we'll call onRemove even if the object is an
         // uninitialized proxy
 
-        $this->repository->remove($object, $objectManager);
+        $this->registry->get($objectManager)->remove($object);
         $this->processor->onRemove($object);
     }
 
@@ -60,7 +60,7 @@ final class DoctrineListener
         $object = $args->getObject();
         $objectManager = $args->getObjectManager();
 
-        $this->repository->add($object, $objectManager);
+        $this->registry->get($objectManager)->add($object);
         $this->processor->onLoad($object);
     }
 
@@ -72,7 +72,7 @@ final class DoctrineListener
         foreach ($unitOfWork->getIdentityMap() as $objects) {
             foreach ($objects as $object) {
                 // do not call onSave if we don't know anything about the object
-                if (!$this->repository->exists($object, $objectManager)) {
+                if (!$this->registry->get($objectManager)->exists($object)) {
                     continue;
                 }
 
@@ -91,7 +91,7 @@ final class DoctrineListener
     {
         $objectManager = $args->getObjectManager();
 
-        $this->repository->clear($objectManager);
+        $this->registry->get($objectManager)->clear();
     }
 
     private function isUninitializedProxy(object $object): bool

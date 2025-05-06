@@ -13,20 +13,15 @@ declare(strict_types=1);
 
 namespace Rekalogika\Reconstitutor\Repository;
 
-use Doctrine\Persistence\ObjectManager;
-use Symfony\Contracts\Service\ResetInterface;
-
-final class ObjectRepository implements ResetInterface, \Countable
+/**
+ * @implements \IteratorAggregate<int,object>
+ */
+final class ObjectRepository implements \Countable, \IteratorAggregate
 {
     /**
-     * @var \WeakMap<object,ObjectManager>
+     * @var \WeakMap<object,true>
      */
-    private \WeakMap $objectToManager;
-
-    /**
-     * @var \WeakMap<ObjectManager,\WeakMap<object,true>>
-     */
-    private \WeakMap $managerToObjects;
+    private \WeakMap $objects;
 
     public function __construct()
     {
@@ -34,92 +29,43 @@ final class ObjectRepository implements ResetInterface, \Countable
     }
 
     #[\Override]
+    public function getIterator(): \Traversable
+    {
+        foreach ($this->objects as $object => $_) {
+            yield $object;
+        }
+    }
+
+    #[\Override]
     public function count(): int
     {
-        return \count($this->objectToManager);
+        return \count($this->objects);
     }
 
     private function init(): void
     {
-        /** @var \WeakMap<object,ObjectManager> */
-        $objectToObjectManager = new \WeakMap();
-        $this->objectToManager = $objectToObjectManager;
-
-        /** @var \WeakMap<ObjectManager,\WeakMap<object,true>> */
-        $objectManagerToObjects = new \WeakMap();
-        $this->managerToObjects = $objectManagerToObjects;
+        /** @var \WeakMap<object,true> */
+        $objects = new \WeakMap();
+        $this->objects = $objects;
     }
 
-    #[\Override]
-    public function reset(): void
+    public function clear(): void
     {
         $this->init();
     }
 
-    public function clear(ObjectManager $manager): void
+    public function add(object $object): void
     {
-        if (!isset($this->managerToObjects[$manager])) {
-            return;
-        }
-
-        /** @var \WeakMap<object,true> */
-        $objectMap = $this->managerToObjects[$manager];
-
-        foreach ($objectMap as $object => $_) {
-            unset($this->objectToManager[$object]);
-        }
-
-        unset($this->managerToObjects[$manager]);
+        $this->objects[$object] = true;
     }
 
-    public function add(object $object, ObjectManager $manager): void
+    public function exists(object $object): bool
     {
-        // add object to objectToObjectManager
-        $this->objectToManager[$object] = $manager;
-
-        // add object to objectManagerToObjects
-        if (!isset($this->managerToObjects[$manager])) {
-            /** @var \WeakMap<object,true> */
-            $objectMap = new \WeakMap();
-            $this->managerToObjects[$manager] = $objectMap;
-        } else {
-            /** @var \WeakMap<object,true> */
-            $objectMap = $this->managerToObjects[$manager];
-        }
-
-        $objectMap->offsetSet($object, true);
+        return isset($this->objects[$object]);
     }
 
-    public function exists(object $object, ObjectManager $manager): bool
+    public function remove(object $object): void
     {
-        return ($this->objectToManager[$object] ?? null) === $manager;
-    }
-
-    public function remove(object $object, ObjectManager $manager): void
-    {
-        unset($this->objectToManager[$object]);
-
-        $managerToObjects = $this->managerToObjects[$manager];
-
-        if (isset($managerToObjects[$object])) {
-            unset($managerToObjects[$object]);
-        }
-    }
-
-    /**
-     * @return iterable<object>
-     */
-    public function getObjectsByManager(ObjectManager $manager): iterable
-    {
-        if (!isset($this->managerToObjects[$manager])) {
-            return [];
-        }
-
-        /** @var \WeakMap<object,true> */
-        $objectMap = $this->managerToObjects[$manager];
-
-        foreach ($objectMap as $object => $_) {
-            yield $object;
-        }
+        unset($this->objects[$object]);
     }
 }
