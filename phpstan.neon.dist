@@ -9,3 +9,6 @@ parameters:
         -
             message: '#Call to an undefined method ReflectionClass<.*>::isUninitializedLazyObject#'
             reportUnmatched: false
+        -
+            message: '#Call to an undefined method ReflectionClass<.*>::initializeLazyObject#'
+            reportUnmatched: false
