@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.2.1
+
+* fix: generics on `AttributeReconstitutor`
+
 ## 2.2.0
 
 * fix: initialize object on `preRemove`

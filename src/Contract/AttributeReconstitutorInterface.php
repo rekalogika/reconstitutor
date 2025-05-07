@@ -14,7 +14,8 @@ declare(strict_types=1);
 namespace Rekalogika\Reconstitutor\Contract;
 
 /**
- * @extends ReconstitutorInterface<object>
+ * @template T of object
+ * @extends ReconstitutorInterface<T>
  */
 interface AttributeReconstitutorInterface extends ReconstitutorInterface
 {
