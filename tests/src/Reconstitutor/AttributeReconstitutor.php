@@ -16,6 +16,10 @@ namespace Rekalogika\Reconstitutor\Tests\Reconstitutor;
 use Rekalogika\Reconstitutor\AbstractAttributeReconstitutor;
 use Rekalogika\Reconstitutor\Tests\Model\StubAttribute;
 
+/**
+ * @template T of object
+ * @extends AbstractAttributeReconstitutor<T>
+ */
 final class AttributeReconstitutor extends AbstractAttributeReconstitutor
 {
     use CommonTrait;

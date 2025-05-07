@@ -18,7 +18,9 @@ use Rekalogika\Reconstitutor\Contract\DirectPropertyAccessorAwareInterface;
 use Rekalogika\Reconstitutor\Contract\DirectPropertyAccessorAwareTrait;
 
 /**
- * @extends AbstractReconstitutor<object>
+ * @template T of object
+ * @extends AbstractReconstitutor<T>
+ * @implements AttributeReconstitutorInterface<T>
  */
 abstract class AbstractAttributeReconstitutor extends AbstractReconstitutor implements
     DirectPropertyAccessorAwareInterface,
