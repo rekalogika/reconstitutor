@@ -31,7 +31,7 @@ final class DoctrineTest extends KernelTestCase
     private RepositoryRegistry $registry;
     private DoctrinePostReconstitutor $reconstitutor;
     // private ServicesResetter $resetter;
-    private UnitOfWork $unitOfWork;
+    // private UnitOfWork $unitOfWork;
 
     #[\Override] protected function setUp(): void
     {
@@ -40,7 +40,7 @@ final class DoctrineTest extends KernelTestCase
         $entityManager = static::getContainer()->get(EntityManagerInterface::class);
         $this->assertInstanceOf(EntityManagerInterface::class, $entityManager);
         $this->entityManager = $entityManager;
-        $this->unitOfWork = $this->entityManager->getUnitOfWork();
+        // $this->unitOfWork = $this->entityManager->getUnitOfWork();
 
         $registry = static::getContainer()->get('rekalogika.reconstitutor.repository_registry');
         $this->assertInstanceOf(RepositoryRegistry::class, $registry);
