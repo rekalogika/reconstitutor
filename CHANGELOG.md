@@ -5,6 +5,7 @@
 * feat: call `onClear` on `detach()` and `flush()`
 * perf: non-managed objects should not trigger `preRemove`.
 * fix: convert proxy class names to the real class names
+* chore: refactor tests
 
 ## 2.2.1
 

@@ -13,61 +13,14 @@ declare(strict_types=1);
 
 namespace Rekalogika\Reconstitutor\Tests\Tests;
 
-use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\ORM\Mapping\ClassMetadata;
-use Doctrine\ORM\Tools\SchemaTool;
-use Doctrine\ORM\UnitOfWork;
-use Doctrine\Persistence\Proxy;
-use Rekalogika\Reconstitutor\Repository\RepositoryRegistry;
 use Rekalogika\Reconstitutor\Tests\Entity\Comment;
 use Rekalogika\Reconstitutor\Tests\Entity\Other;
 use Rekalogika\Reconstitutor\Tests\Entity\Post;
-use Rekalogika\Reconstitutor\Tests\Reconstitutor\DoctrinePostReconstitutor;
-use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
-use Symfony\Component\HttpKernel\DependencyInjection\ServicesResetter;
+use Rekalogika\Reconstitutor\Tests\EventRecorder\EventType;
 
-final class DoctrineTest extends KernelTestCase
+final class DoctrineTest extends DoctrineTestCase
 {
-    private EntityManagerInterface $entityManager;
-    private RepositoryRegistry $registry;
-    private DoctrinePostReconstitutor $reconstitutor;
-    // private ServicesResetter $resetter;
-    // private UnitOfWork $unitOfWork;
-
-    #[\Override] protected function setUp(): void
-    {
-        parent::setUp();
-
-        $entityManager = static::getContainer()->get(EntityManagerInterface::class);
-        $this->assertInstanceOf(EntityManagerInterface::class, $entityManager);
-        $this->entityManager = $entityManager;
-        // $this->unitOfWork = $this->entityManager->getUnitOfWork();
-
-        $registry = static::getContainer()->get('rekalogika.reconstitutor.repository_registry');
-        $this->assertInstanceOf(RepositoryRegistry::class, $registry);
-        $this->registry = $registry;
-
-        /** @var list<ClassMetadata<object>> */
-        $allMetadatas = $this->entityManager->getMetadataFactory()->getAllMetadata();
-
-        $schemaTool = new SchemaTool($entityManager);
-        $schemaTool->createSchema($allMetadatas);
-
-        // reconstitutor
-
-        $reconstitutor = static::getContainer()
-            ->get(DoctrinePostReconstitutor::class);
-
-        $this->assertInstanceOf(DoctrinePostReconstitutor::class, $reconstitutor);
-        $this->reconstitutor = $reconstitutor;
-
-        // resetter
-        // $resetter = static::getContainer()->get('services_resetter');
-        // $this->assertInstanceOf(ServicesResetter::class, $resetter);
-        // $this->resetter = $resetter;
-    }
-
-    public function testPost(): void
+    public function testLifeCycle(): void
     {
         // create the entities
         $post = new Post('title');
@@ -105,7 +58,7 @@ final class DoctrineTest extends KernelTestCase
         $this->assertCount(1, $post->getComments());
     }
 
-    public function testProxy(): void
+    public function testProxyInitializationOnNonDoctrineManagedProperty(): void
     {
         // create the entities
         $post = new Post('title');
@@ -173,9 +126,9 @@ final class DoctrineTest extends KernelTestCase
         $this->assertNotProxy($post);
         $this->assertEquals($id, $post->getId());
         $this->entityManager->flush();
-        
+
         // check in reconstitutor
-        $this->assertTrue($this->reconstitutor->hasRemoveCalledOnObjectId($id));
+        $this->assertEventRecorded($post, type: EventType::onRemove);
     }
 
     public function testRemoveUninitializedProxy(): void
@@ -213,13 +166,13 @@ final class DoctrineTest extends KernelTestCase
         $this->assertNull($post);
 
         // check in reconstitutor
-        $this->assertFalse($this->reconstitutor->isImageExists($id), 'Image should be removed');
+        $this->assertPostImageNotExists($id);
     }
 
     public function testRemoveUninitializedProxyWithoutReconstitutor(): void
     {
         // create the entities
-        $entity = new Other;
+        $entity = new Other();
         $id = $entity->getId();
 
         $this->entityManager->persist($entity);
@@ -233,7 +186,7 @@ final class DoctrineTest extends KernelTestCase
         $this->assertInstanceOf(Other::class, $entity);
         $this->assertIsProxy($entity);
 
-        // remove the entity
+        // remove the entity, the entity should not be initialized
         $this->entityManager->remove($entity);
         $this->assertIsProxy($entity);
         $this->assertEquals($id, $entity->getId());
@@ -256,7 +209,7 @@ final class DoctrineTest extends KernelTestCase
         $this->assertCount(0, $this->registry->get($this->entityManager));
 
         // check in reconstitutor
-        $this->assertTrue($this->reconstitutor->hasClearCalledOnObjectId($post->getId()));
+        $this->assertEventRecorded($post, type: EventType::onClear);
     }
 
     public function testClearProxy(): void
@@ -268,7 +221,7 @@ final class DoctrineTest extends KernelTestCase
         $this->assertCount(1, $this->registry->get($this->entityManager));
         $this->entityManager->flush();
         $this->entityManager->clear();
-        $this->reconstitutor->reset(); // reset our tracker
+        $this->eventRecorder->reset(); // reset our tracker
         $this->assertCount(0, $this->registry->get($this->entityManager));
 
         // reload
@@ -282,7 +235,7 @@ final class DoctrineTest extends KernelTestCase
         $this->assertCount(0, $this->registry->get($this->entityManager));
 
         // check in reconstitutor
-        $this->assertFalse($this->reconstitutor->hasClearCalledOnObjectId($post->getId()));
+        $this->assertCountEvents(0, type: EventType::onClear, id: $post->getId());
     }
 
     public function testDetachInitialized(): void
@@ -294,7 +247,7 @@ final class DoctrineTest extends KernelTestCase
         $this->assertCount(1, $this->registry->get($this->entityManager));
         $this->entityManager->flush();
         $this->entityManager->clear();
-        $this->reconstitutor->reset(); // reset our tracker
+        $this->eventRecorder->reset(); // reset our tracker
         $this->assertCount(0, $this->registry->get($this->entityManager));
 
         // reload
@@ -308,7 +261,7 @@ final class DoctrineTest extends KernelTestCase
         $this->entityManager->flush();
 
         // check in reconstitutor
-        $this->assertTrue($this->reconstitutor->hasClearCalledOnObjectId($post->getId()));
+        $this->assertCountEvents(1, type: EventType::onClear, id: $post->getId());
     }
 
     public function testDetachProxy(): void
@@ -320,7 +273,7 @@ final class DoctrineTest extends KernelTestCase
         $this->assertCount(1, $this->registry->get($this->entityManager));
         $this->entityManager->flush();
         $this->entityManager->clear();
-        $this->reconstitutor->reset(); // reset our tracker
+        $this->eventRecorder->reset(); // reset our tracker
         $this->assertCount(0, $this->registry->get($this->entityManager));
 
         // reload
@@ -335,53 +288,6 @@ final class DoctrineTest extends KernelTestCase
         $this->assertIsProxy($post);
 
         // check in reconstitutor
-        $this->assertFalse($this->reconstitutor->hasClearCalledOnObjectId($post->getId()));
-    }
-
-    //
-    // assertions
-    //
-
-    private function assertIsProxy(mixed $object): void
-    {
-        $this->assertIsObject($object, 'Expected an object');
-
-        if (\PHP_VERSION_ID >= 80400) {
-            $reflection = new \ReflectionClass($object);
-            /**
-             * @psalm-suppress UndefinedMethod
-             * @psalm-suppress MixedAssignment
-             */
-            $isProxy = $reflection->isUninitializedLazyObject($object);
-
-            if ($isProxy) {
-                return;
-            }
-        }
-
-        $this->assertInstanceOf(Proxy::class, $object, 'Object is not a proxy');
-        $this->assertFalse($object->__isInitialized(), 'Object is not an uninitialized proxy');
-    }
-
-    private function assertNotProxy(mixed $object): void
-    {
-        $this->assertIsObject($object, 'Expected an object');
-
-        if ($object instanceof Proxy) {
-            $this->assertTrue($object->__isInitialized(), 'Object is a proxy, but should not be');
-
-            return;
-        }
-
-        if (\PHP_VERSION_ID >= 80400) {
-            $reflection = new \ReflectionClass($object);
-
-            /**
-             * @psalm-suppress UndefinedMethod
-             */
-            if ($reflection->isUninitializedLazyObject($object)) {
-                static::fail('Object is a proxy, but should not be');
-            }
-        }
+        $this->assertCountEvents(0, type: EventType::onClear, id: $post->getId());
     }
 }
