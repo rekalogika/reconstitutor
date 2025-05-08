@@ -67,11 +67,6 @@ final class ToIterableTest extends DoctrineTestCase
             $this->assertInstanceOf(Post::class, $post);
             $this->assertNotProxy($post);
 
-            // $currentTitle = $post->getTitle();
-
-            // // make some changes
-            // $post->setTitle($currentTitle . ' updated');
-
             $i++;
         }
 
