@@ -17,6 +17,7 @@ use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use Rekalogika\Reconstitutor\Contract\ReconstitutorInterface;
 use Rekalogika\Reconstitutor\Contract\ReconstitutorResolverInterface;
+use Rekalogika\Reconstitutor\Util\ClassUtil;
 
 final class ReconstitutorProcessor implements LoggerAwareInterface
 {
@@ -32,7 +33,7 @@ final class ReconstitutorProcessor implements LoggerAwareInterface
      */
     private function getReconstitutors(object $object): iterable
     {
-        $serviceIds = $this->resolver->getReconstitutors($object::class);
+        $serviceIds = $this->resolver->getReconstitutors(ClassUtil::getClass($object));
 
         foreach ($serviceIds as $serviceId) {
             yield [$serviceId, $this->container->get($serviceId)];
@@ -41,7 +42,7 @@ final class ReconstitutorProcessor implements LoggerAwareInterface
 
     public function hasReconstitutor(object $object): bool
     {
-        return $this->resolver->hasReconstitutor($object::class);
+        return $this->resolver->hasReconstitutor(ClassUtil::getClass($object));
     }
 
     private function log(
