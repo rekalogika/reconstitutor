@@ -18,6 +18,8 @@ use Rekalogika\Reconstitutor\Contract\ReconstitutorResolverInterface;
 
 final class CachingReconstitutorResolver implements ReconstitutorResolverInterface
 {
+    use ReconstitutorResolverTrait;
+
     public function __construct(
         private readonly ReconstitutorResolverInterface $decorated,
         private readonly CacheItemPoolInterface $cache,

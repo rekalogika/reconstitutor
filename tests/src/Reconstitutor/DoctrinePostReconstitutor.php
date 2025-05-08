@@ -32,6 +32,11 @@ final class DoctrinePostReconstitutor extends AbstractClassReconstitutor impleme
      */
     private array $clearCalledOnObjectIds = [];
 
+    /**
+     * @var list<string>
+     */
+    private array $removeCalledOnObjectIds = [];
+
     #[\Override]
     public function reset(): void
     {
@@ -66,6 +71,8 @@ final class DoctrinePostReconstitutor extends AbstractClassReconstitutor impleme
     public function onRemove(object $object): void
     {
         unset($this->images[$object->getId()]);
+
+        $this->removeCalledOnObjectIds[] = $object->getId();
     }
 
     #[\Override]
@@ -77,6 +84,11 @@ final class DoctrinePostReconstitutor extends AbstractClassReconstitutor impleme
     public function hasClearCalledOnObjectId(string $objectId): bool
     {
         return \in_array($objectId, $this->clearCalledOnObjectIds, true);
+    }
+
+    public function hasRemoveCalledOnObjectId(string $objectId): bool
+    {
+        return \in_array($objectId, $this->removeCalledOnObjectIds, true);
     }
 
     public function isImageExists(string $objectId): bool

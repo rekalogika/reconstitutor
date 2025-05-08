@@ -20,6 +20,7 @@ use Doctrine\ORM\UnitOfWork;
 use Doctrine\Persistence\Proxy;
 use Rekalogika\Reconstitutor\Repository\RepositoryRegistry;
 use Rekalogika\Reconstitutor\Tests\Entity\Comment;
+use Rekalogika\Reconstitutor\Tests\Entity\Other;
 use Rekalogika\Reconstitutor\Tests\Entity\Post;
 use Rekalogika\Reconstitutor\Tests\Reconstitutor\DoctrinePostReconstitutor;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
@@ -157,6 +158,26 @@ final class DoctrineTest extends KernelTestCase
         $this->assertNotProxy($post);
     }
 
+    public function testRemove(): void
+    {
+        // create the entities
+        $post = new Post('title');
+        $post->setImage('someImage');
+        $id = $post->getId();
+
+        $this->entityManager->persist($post);
+        $this->entityManager->flush();
+
+        // remove the post
+        $this->entityManager->remove($post);
+        $this->assertNotProxy($post);
+        $this->assertEquals($id, $post->getId());
+        $this->entityManager->flush();
+        
+        // check in reconstitutor
+        $this->assertTrue($this->reconstitutor->hasRemoveCalledOnObjectId($id));
+    }
+
     public function testRemoveUninitializedProxy(): void
     {
         // create the entities
@@ -193,6 +214,33 @@ final class DoctrineTest extends KernelTestCase
 
         // check in reconstitutor
         $this->assertFalse($this->reconstitutor->isImageExists($id), 'Image should be removed');
+    }
+
+    public function testRemoveUninitializedProxyWithoutReconstitutor(): void
+    {
+        // create the entities
+        $entity = new Other;
+        $id = $entity->getId();
+
+        $this->entityManager->persist($entity);
+        $this->entityManager->flush();
+
+        // clear
+        $this->entityManager->clear();
+
+        // reload from database
+        $entity = $this->entityManager->getReference(Other::class, $entity->getId());
+        $this->assertInstanceOf(Other::class, $entity);
+        $this->assertIsProxy($entity);
+
+        // remove the entity
+        $this->entityManager->remove($entity);
+        $this->assertIsProxy($entity);
+        $this->assertEquals($id, $entity->getId());
+
+        $this->entityManager->flush();
+        $this->assertIsProxy($entity);
+        $this->assertEquals($id, $entity->getId());
     }
 
     public function testClear(): void

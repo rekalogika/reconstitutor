@@ -17,6 +17,8 @@ use Rekalogika\Reconstitutor\Contract\ReconstitutorResolverInterface;
 
 final readonly class AttributeReconstitutorResolver implements ReconstitutorResolverInterface
 {
+    use ReconstitutorResolverTrait;
+
     /**
      * @param array<class-string,list<string>> $classMap
      */

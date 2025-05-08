@@ -39,6 +39,11 @@ final class ReconstitutorProcessor implements LoggerAwareInterface
         }
     }
 
+    public function hasReconstitutor(object $object): bool
+    {
+        return $this->resolver->hasReconstitutor($object::class);
+    }
+
     private function log(
         object $object,
         string $serviceId,

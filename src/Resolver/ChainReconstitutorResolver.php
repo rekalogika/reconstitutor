@@ -35,4 +35,16 @@ final class ChainReconstitutorResolver implements ReconstitutorResolverInterface
 
         return array_values(array_unique($ids));
     }
+
+    #[\Override]
+    public function hasReconstitutor(string $class): bool
+    {
+        foreach ($this->resolvers as $resolver) {
+            if ($resolver->hasReconstitutor($class)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
 }

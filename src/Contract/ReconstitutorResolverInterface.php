@@ -25,4 +25,11 @@ interface ReconstitutorResolverInterface
      * @return list<string> Service ID of reconstitutors
      */
     public function getReconstitutors(string $class): array;
+
+    /**
+     * Checks if the class has one or more reconstitutors
+     *
+     * @param class-string $class
+     */
+    public function hasReconstitutor(string $class): bool;
 }

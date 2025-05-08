@@ -3,6 +3,7 @@
 ## 2.3.0
 
 * feat: call `onClear` on `detach()` and `flush()`
+* perf: non-managed objects should not trigger `preRemove`.
 
 ## 2.2.1
 

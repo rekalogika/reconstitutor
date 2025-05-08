@@ -18,6 +18,8 @@ use Rekalogika\Reconstitutor\Exception\LogicException;
 
 final class ClassReconstitutorResolver implements ReconstitutorResolverInterface
 {
+    use ReconstitutorResolverTrait;
+
     /**
      * @param array<class-string,list<string>> $classMap
      */
