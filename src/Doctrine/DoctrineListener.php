@@ -91,6 +91,13 @@ final class DoctrineListener
     {
         $object = $args->getObject();
 
+        // if the object does not have a reconstitutor, we don't need to do
+        // anything
+
+        if (!$this->processor->hasReconstitutor($object)) {
+            return;
+        }
+
         // if the object being removed is a proxy, the `postRemove` event will
         // contain an uninitializable proxy, unless we initialize it here first.
 
