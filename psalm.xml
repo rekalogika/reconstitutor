@@ -30,6 +30,11 @@
                 <file name="tests/src/Tests/ClassUtilTest.php" />
             </errorLevel>
         </ClassMustBeFinal>
+        <InternalMethod>
+            <errorLevel type="info">
+                <file name="tests/src/Tests/DoctrineTestCase.php" />
+            </errorLevel>
+        </InternalMethod>
     </issueHandlers>
 
     <plugins>

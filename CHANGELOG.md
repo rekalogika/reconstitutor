@@ -6,6 +6,7 @@
 * perf: non-managed objects should not trigger `preRemove`.
 * fix: convert proxy class names to the real class names
 * chore: refactor tests
+* test: add test for `toIterable()`
 
 ## 2.2.1
 

@@ -73,6 +73,11 @@ abstract class DoctrineTestCase extends KernelTestCase
         $this->eventRecorder = $eventRecorder;
     }
 
+    protected function reset(): void
+    {
+        $this->resetter->reset();
+    }
+
     protected function assertIsProxy(mixed $object): void
     {
         $this->assertIsObject($object, 'Expected an object');
