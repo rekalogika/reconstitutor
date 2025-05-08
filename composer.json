@@ -28,7 +28,7 @@
         "psr/log": "^2|^3",
         "symfony/config": "^6.0 || ^7.0",
         "symfony/cache": "^6.0 || ^7.0",
-        "symfony/dependency-injection": "^6.1 || ^7.0",
+        "symfony/dependency-injection": "^6.3 || ^7.0",
         "symfony/http-kernel": "^6.0 || ^7.0",
         "symfony/service-contracts": "^2.0 || ^3.0"
     },
