@@ -27,6 +27,7 @@
         <ClassMustBeFinal>
             <errorLevel type="suppress">
                 <directory name="tests/src/Entity/"/>
+                <file name="tests/src/Tests/ClassUtilTest.php" />
             </errorLevel>
         </ClassMustBeFinal>
     </issueHandlers>
