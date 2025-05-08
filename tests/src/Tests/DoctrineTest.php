@@ -16,17 +16,22 @@ namespace Rekalogika\Reconstitutor\Tests\Tests;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\ORM\Tools\SchemaTool;
+use Doctrine\ORM\UnitOfWork;
 use Doctrine\Persistence\Proxy;
 use Rekalogika\Reconstitutor\Repository\RepositoryRegistry;
 use Rekalogika\Reconstitutor\Tests\Entity\Comment;
 use Rekalogika\Reconstitutor\Tests\Entity\Post;
 use Rekalogika\Reconstitutor\Tests\Reconstitutor\DoctrinePostReconstitutor;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
+use Symfony\Component\HttpKernel\DependencyInjection\ServicesResetter;
 
 final class DoctrineTest extends KernelTestCase
 {
     private EntityManagerInterface $entityManager;
     private RepositoryRegistry $registry;
+    private DoctrinePostReconstitutor $reconstitutor;
+    // private ServicesResetter $resetter;
+    // private UnitOfWork $unitOfWork;
 
     #[\Override] protected function setUp(): void
     {
@@ -35,6 +40,7 @@ final class DoctrineTest extends KernelTestCase
         $entityManager = static::getContainer()->get(EntityManagerInterface::class);
         $this->assertInstanceOf(EntityManagerInterface::class, $entityManager);
         $this->entityManager = $entityManager;
+        // $this->unitOfWork = $this->entityManager->getUnitOfWork();
 
         $registry = static::getContainer()->get('rekalogika.reconstitutor.repository_registry');
         $this->assertInstanceOf(RepositoryRegistry::class, $registry);
@@ -45,6 +51,19 @@ final class DoctrineTest extends KernelTestCase
 
         $schemaTool = new SchemaTool($entityManager);
         $schemaTool->createSchema($allMetadatas);
+
+        // reconstitutor
+
+        $reconstitutor = static::getContainer()
+            ->get(DoctrinePostReconstitutor::class);
+
+        $this->assertInstanceOf(DoctrinePostReconstitutor::class, $reconstitutor);
+        $this->reconstitutor = $reconstitutor;
+
+        // resetter
+        // $resetter = static::getContainer()->get('services_resetter');
+        // $this->assertInstanceOf(ServicesResetter::class, $resetter);
+        // $this->resetter = $resetter;
     }
 
     public function testPost(): void
@@ -173,10 +192,7 @@ final class DoctrineTest extends KernelTestCase
         $this->assertNull($post);
 
         // check in reconstitutor
-        $reconstitutor = static::getContainer()
-            ->get(DoctrinePostReconstitutor::class);
-        $this->assertInstanceOf(DoctrinePostReconstitutor::class, $reconstitutor);
-        $this->assertFalse($reconstitutor->isImageExists($id), 'Image should be removed');
+        $this->assertFalse($this->reconstitutor->isImageExists($id), 'Image should be removed');
     }
 
     public function testClear(): void
@@ -192,11 +208,86 @@ final class DoctrineTest extends KernelTestCase
         $this->assertCount(0, $this->registry->get($this->entityManager));
 
         // check in reconstitutor
-        $reconstitutor = static::getContainer()
-            ->get(DoctrinePostReconstitutor::class);
+        $this->assertTrue($this->reconstitutor->hasClearCalledOnObjectId($post->getId()));
+    }
 
-        $this->assertInstanceOf(DoctrinePostReconstitutor::class, $reconstitutor);
-        $this->assertTrue($reconstitutor->hasClearCalledOnObjectId($post->getId()));
+    public function testClearProxy(): void
+    {
+        // create the entities
+        $post = new Post('title');
+        $post->setImage('someImage');
+        $this->entityManager->persist($post);
+        $this->assertCount(1, $this->registry->get($this->entityManager));
+        $this->entityManager->flush();
+        $this->entityManager->clear();
+        $this->reconstitutor->reset(); // reset our tracker
+        $this->assertCount(0, $this->registry->get($this->entityManager));
+
+        // reload
+        $post = $this->entityManager->getReference(Post::class, $post->getId());
+        $this->assertInstanceOf(Post::class, $post);
+        $this->assertIsProxy($post);
+        $this->assertCount(0, $this->registry->get($this->entityManager));
+
+        // clear should not call onClear on proxy
+        $this->entityManager->clear();
+        $this->assertCount(0, $this->registry->get($this->entityManager));
+
+        // check in reconstitutor
+        $this->assertFalse($this->reconstitutor->hasClearCalledOnObjectId($post->getId()));
+    }
+
+    public function testDetachInitialized(): void
+    {
+        // create the entities
+        $post = new Post('title');
+        $post->setImage('someImage');
+        $this->entityManager->persist($post);
+        $this->assertCount(1, $this->registry->get($this->entityManager));
+        $this->entityManager->flush();
+        $this->entityManager->clear();
+        $this->reconstitutor->reset(); // reset our tracker
+        $this->assertCount(0, $this->registry->get($this->entityManager));
+
+        // reload
+        $post = $this->entityManager->find(Post::class, $post->getId());
+        $this->assertInstanceOf(Post::class, $post);
+        $this->assertNotProxy($post);
+        $this->assertCount(1, $this->registry->get($this->entityManager));
+
+        // detach and flush should call onClear
+        $this->entityManager->detach($post);
+        $this->entityManager->flush();
+
+        // check in reconstitutor
+        $this->assertTrue($this->reconstitutor->hasClearCalledOnObjectId($post->getId()));
+    }
+
+    public function testDetachProxy(): void
+    {
+        // create the entities
+        $post = new Post('title');
+        $post->setImage('someImage');
+        $this->entityManager->persist($post);
+        $this->assertCount(1, $this->registry->get($this->entityManager));
+        $this->entityManager->flush();
+        $this->entityManager->clear();
+        $this->reconstitutor->reset(); // reset our tracker
+        $this->assertCount(0, $this->registry->get($this->entityManager));
+
+        // reload
+        $post = $this->entityManager->getReference(Post::class, $post->getId());
+        $this->assertInstanceOf(Post::class, $post);
+        $this->assertCount(0, $this->registry->get($this->entityManager));
+        $this->assertIsProxy($post);
+
+        // detach and flush should not call onClear on proxy
+        $this->entityManager->detach($post);
+        $this->entityManager->flush();
+        $this->assertIsProxy($post);
+
+        // check in reconstitutor
+        $this->assertFalse($this->reconstitutor->hasClearCalledOnObjectId($post->getId()));
     }
 
     //

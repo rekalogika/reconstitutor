@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.3.0
+
+* feat: call `onClear` on `detach()` and `flush()`
+
 ## 2.2.1
 
 * fix: generics on `AttributeReconstitutor`
