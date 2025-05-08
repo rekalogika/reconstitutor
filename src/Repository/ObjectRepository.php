@@ -23,6 +23,11 @@ final class ObjectRepository implements \Countable, \IteratorAggregate
      */
     private \WeakMap $objects;
 
+    /**
+     * @var array<int,object>
+     */
+    private array $objectsInUnitOfWork = [];
+
     public function __construct()
     {
         $this->init();
@@ -47,6 +52,8 @@ final class ObjectRepository implements \Countable, \IteratorAggregate
         /** @var \WeakMap<object,true> */
         $objects = new \WeakMap();
         $this->objects = $objects;
+
+        $this->objectsInUnitOfWork = [];
     }
 
     public function clear(): void
@@ -67,5 +74,38 @@ final class ObjectRepository implements \Countable, \IteratorAggregate
     public function remove(object $object): void
     {
         unset($this->objects[$object]);
+    }
+
+    /**
+     * Records objects that are in doctrine's unit of work that is not an
+     * uninitialized proxy
+     *
+     * @param object $object
+     */
+    public function addForReconciliation(object $object): void
+    {
+        $this->objectsInUnitOfWork[spl_object_id($object)] = $object;
+    }
+
+    /**
+     * Returns objects that are in reconstitutor's repository but not in
+     * Doctrine's unit of work. And removes them from the repository.
+     *
+     * @return list<object>
+     */
+    public function doReconciliation(): array
+    {
+        $missingObjects = [];
+
+        foreach ($this->objects as $object => $_) {
+            if (isset($this->objectsInUnitOfWork[spl_object_id($object)])) {
+                continue;
+            }
+
+            $this->remove($object);
+            $missingObjects[] = $object;
+        }
+
+        return $missingObjects;
     }
 }

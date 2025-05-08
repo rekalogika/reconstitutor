@@ -14,8 +14,9 @@ psalm:
 	vendor/bin/psalm --no-cache
 
 .PHONY: phpunit
-phpunit: clean
-	vendor/bin/phpunit
+phpunit:
+	$(eval c ?=)
+	$(PHP) vendor/bin/phpunit $(c)
 
 .PHONY: php-cs-fixer
 php-cs-fixer: tools/php-cs-fixer

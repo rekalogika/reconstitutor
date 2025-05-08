@@ -15,11 +15,12 @@ namespace Rekalogika\Reconstitutor\Tests\Reconstitutor;
 
 use Rekalogika\Reconstitutor\AbstractClassReconstitutor;
 use Rekalogika\Reconstitutor\Tests\Entity\Post;
+use Symfony\Contracts\Service\ResetInterface;
 
 /**
  * @extends AbstractClassReconstitutor<Post>
  */
-final class DoctrinePostReconstitutor extends AbstractClassReconstitutor
+final class DoctrinePostReconstitutor extends AbstractClassReconstitutor implements ResetInterface
 {
     /**
      * @var array<string,string>
@@ -30,6 +31,13 @@ final class DoctrinePostReconstitutor extends AbstractClassReconstitutor
      * @var list<string>
      */
     private array $clearCalledOnObjectIds = [];
+
+    #[\Override]
+    public function reset(): void
+    {
+        $this->images = [];
+        $this->clearCalledOnObjectIds = [];
+    }
 
     #[\Override]
     public static function getClass(): string

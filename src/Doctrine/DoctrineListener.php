@@ -69,8 +69,21 @@ final class DoctrineListener
                     continue;
                 }
 
+                // reconcile the object with the repository
+                $this->registry->get($objectManager)->addForReconciliation($object);
+
+                // call onSave
                 $this->processor->onSave($object);
             }
+        }
+
+        // missing objects are the object that was previously `detach()`ed
+        $missingObjects = $this->registry
+            ->get($objectManager)
+            ->doReconciliation();
+
+        foreach ($missingObjects as $object) {
+            $this->processor->onClear($object);
         }
     }
 
