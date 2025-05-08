@@ -15,6 +15,9 @@ namespace Rekalogika\Reconstitutor\Tests\Reconstitutor;
 
 use Rekalogika\Reconstitutor\AbstractClassReconstitutor;
 use Rekalogika\Reconstitutor\Tests\Entity\Post;
+use Rekalogika\Reconstitutor\Tests\EventRecorder\Event;
+use Rekalogika\Reconstitutor\Tests\EventRecorder\EventRecorder;
+use Rekalogika\Reconstitutor\Tests\EventRecorder\EventType;
 use Symfony\Contracts\Service\ResetInterface;
 
 /**
@@ -27,21 +30,15 @@ final class DoctrinePostReconstitutor extends AbstractClassReconstitutor impleme
      */
     private array $images = [];
 
-    /**
-     * @var list<string>
-     */
-    private array $clearCalledOnObjectIds = [];
+    public function __construct(
+        private readonly EventRecorder $eventRecorder,
+    ) {}
 
-    /**
-     * @var list<string>
-     */
-    private array $removeCalledOnObjectIds = [];
 
     #[\Override]
     public function reset(): void
     {
         $this->images = [];
-        $this->clearCalledOnObjectIds = [];
     }
 
     #[\Override]
@@ -56,6 +53,7 @@ final class DoctrinePostReconstitutor extends AbstractClassReconstitutor impleme
         $image = $this->images[$object->getId()] ?? null;
 
         $this->set($object, 'image', $image);
+        $this->eventRecorder->record(new Event($object, EventType::onLoad));
     }
 
     #[\Override]
@@ -65,6 +63,7 @@ final class DoctrinePostReconstitutor extends AbstractClassReconstitutor impleme
         \assert(\is_string($image));
 
         $this->images[$object->getId()] = $image;
+        $this->eventRecorder->record(new Event($object, EventType::onSave));
     }
 
     #[\Override]
@@ -72,23 +71,13 @@ final class DoctrinePostReconstitutor extends AbstractClassReconstitutor impleme
     {
         unset($this->images[$object->getId()]);
 
-        $this->removeCalledOnObjectIds[] = $object->getId();
+        $this->eventRecorder->record(new Event($object, EventType::onRemove));
     }
 
     #[\Override]
     public function onClear(object $object): void
     {
-        $this->clearCalledOnObjectIds[] = $object->getId();
-    }
-
-    public function hasClearCalledOnObjectId(string $objectId): bool
-    {
-        return \in_array($objectId, $this->clearCalledOnObjectIds, true);
-    }
-
-    public function hasRemoveCalledOnObjectId(string $objectId): bool
-    {
-        return \in_array($objectId, $this->removeCalledOnObjectIds, true);
+        $this->eventRecorder->record(new Event($object, EventType::onClear));
     }
 
     public function isImageExists(string $objectId): bool
