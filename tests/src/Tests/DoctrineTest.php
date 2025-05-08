@@ -30,7 +30,7 @@ final class DoctrineTest extends KernelTestCase
     private EntityManagerInterface $entityManager;
     private RepositoryRegistry $registry;
     private DoctrinePostReconstitutor $reconstitutor;
-    private ServicesResetter $resetter;
+    // private ServicesResetter $resetter;
     private UnitOfWork $unitOfWork;
 
     #[\Override] protected function setUp(): void
@@ -61,9 +61,9 @@ final class DoctrineTest extends KernelTestCase
         $this->reconstitutor = $reconstitutor;
 
         // resetter
-        $resetter = static::getContainer()->get('services_resetter');
-        $this->assertInstanceOf(ServicesResetter::class, $resetter);
-        $this->resetter = $resetter;
+        // $resetter = static::getContainer()->get('services_resetter');
+        // $this->assertInstanceOf(ServicesResetter::class, $resetter);
+        // $this->resetter = $resetter;
     }
 
     public function testPost(): void
