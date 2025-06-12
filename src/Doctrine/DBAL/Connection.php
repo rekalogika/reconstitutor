@@ -54,7 +54,7 @@ final class Connection extends AbstractConnectionMiddleware
     }
 
     #[\Override]
-    public function exec(string $sql): int|string
+    public function exec(string $sql): int
     {
         if (str_starts_with($sql, 'ROLLBACK')) {
             $this->listener->postRollBack(new TransactionEventArgs($this->driver));
@@ -64,6 +64,12 @@ final class Connection extends AbstractConnectionMiddleware
             $this->listener->postBeginTransaction(new TransactionEventArgs($this->driver));
         }
 
-        return parent::exec($sql);
+        $result = parent::exec($sql);
+
+        if (is_string($result)) {
+            return PHP_INT_MAX;
+        }
+
+        return $result;
     }
 }

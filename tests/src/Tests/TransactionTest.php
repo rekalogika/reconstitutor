@@ -25,10 +25,10 @@ final class TransactionTest extends DoctrineTestCase
         return $post;
     }
 
-    private function createPostWithoutImage(): Post
-    {
-        return new Post('title');
-    }
+    // private function createPostWithoutImage(): Post
+    // {
+    //     return new Post('title');
+    // }
 
     private function loadPostWithImage(): Post
     {
