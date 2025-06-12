@@ -12,8 +12,8 @@ declare(strict_types=1);
  */
 
 use Rekalogika\Reconstitutor\Context\ManagerContextRegistry;
+use Rekalogika\Reconstitutor\Doctrine\DBAL\Middleware;
 use Rekalogika\Reconstitutor\Doctrine\DoctrineListener;
-use Rekalogika\Reconstitutor\Doctrine\Middleware;
 use Rekalogika\Reconstitutor\ReconstitutorContainer;
 use Rekalogika\Reconstitutor\ReconstitutorProcessor;
 use Rekalogika\Reconstitutor\Resolver\AttributeReconstitutorResolver;
