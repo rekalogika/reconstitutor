@@ -11,10 +11,11 @@ declare(strict_types=1);
  * that was distributed with this source code.
  */
 
-namespace Rekalogika\Reconstitutor\Doctrine;
+namespace Rekalogika\Reconstitutor\Doctrine\DBAL;
 
 use Doctrine\DBAL\Driver as DriverInterface;
 use Doctrine\DBAL\Driver\Middleware as MiddlewareInterface;
+use Rekalogika\Reconstitutor\Doctrine\DoctrineListener;
 
 final readonly class Middleware implements MiddlewareInterface
 {

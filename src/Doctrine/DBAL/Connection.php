@@ -11,10 +11,12 @@ declare(strict_types=1);
  * that was distributed with this source code.
  */
 
-namespace Rekalogika\Reconstitutor\Doctrine;
+namespace Rekalogika\Reconstitutor\Doctrine\DBAL;
 
 use Doctrine\DBAL\Driver\Connection as ConnectionInterface;
 use Doctrine\DBAL\Driver\Middleware\AbstractConnectionMiddleware;
+use Rekalogika\Reconstitutor\Doctrine\DoctrineListener;
+use Rekalogika\Reconstitutor\Doctrine\TransactionEventArgs;
 
 final class Connection extends AbstractConnectionMiddleware
 {
