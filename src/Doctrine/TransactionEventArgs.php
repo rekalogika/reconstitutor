@@ -13,16 +13,16 @@ declare(strict_types=1);
 
 namespace Rekalogika\Reconstitutor\Doctrine;
 
-use Doctrine\DBAL\Driver\Connection;
+use Rekalogika\Reconstitutor\Doctrine\DBAL\Driver;
 
 final readonly class TransactionEventArgs
 {
     public function __construct(
-        private readonly Connection $connection,
+        private readonly Driver $driver,
     ) {}
 
-    public function getConnection(): Connection
+    public function getDriver(): Driver
     {
-        return $this->connection;
+        return $this->driver;
     }
 }

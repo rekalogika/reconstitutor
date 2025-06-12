@@ -25,10 +25,10 @@ final class TransactionTest extends DoctrineTestCase
         return $post;
     }
 
-    private function createPostWithoutImage(): Post
-    {
-        return new Post('title');
-    }
+    // private function createPostWithoutImage(): Post
+    // {
+    //     return new Post('title');
+    // }
 
     private function loadPostWithImage(): Post
     {
@@ -51,17 +51,16 @@ final class TransactionTest extends DoctrineTestCase
         $this->assertPostImageNotExists($id);
     }
 
-    // @todo enable after fixing
-    // public function testBeginPersistFlushRollback(): void
-    // {
-    //     $post = $this->createPostWithImage();
-    //     $id = $post->getId();
-    //     $this->entityManager->beginTransaction();
-    //     $this->entityManager->persist($post);
-    //     $this->entityManager->flush();
-    //     $this->entityManager->rollback();
-    //     $this->assertPostImageNotExists($id);
-    // }
+    public function testBeginPersistFlushRollback(): void
+    {
+        $post = $this->createPostWithImage();
+        $id = $post->getId();
+        $this->entityManager->beginTransaction();
+        $this->entityManager->persist($post);
+        $this->entityManager->flush();
+        $this->entityManager->rollback();
+        $this->assertPostImageNotExists($id);
+    }
 
     public function testPersistBeginFlushCommit(): void
     {

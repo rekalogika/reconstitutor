@@ -23,6 +23,7 @@ final class Connection extends AbstractConnectionMiddleware
     public function __construct(
         ConnectionInterface $wrappedConnection,
         private readonly DoctrineListener $listener,
+        private readonly Driver $driver,
     ) {
         parent::__construct($wrappedConnection);
     }
@@ -33,7 +34,7 @@ final class Connection extends AbstractConnectionMiddleware
     {
         parent::beginTransaction();
 
-        $this->listener->postBeginTransaction(new TransactionEventArgs($this));
+        $this->listener->postBeginTransaction(new TransactionEventArgs($this->driver));
     }
 
     #[\Override]
@@ -41,7 +42,7 @@ final class Connection extends AbstractConnectionMiddleware
     {
         parent::commit();
 
-        $this->listener->postCommit(new TransactionEventArgs($this));
+        $this->listener->postCommit(new TransactionEventArgs($this->driver));
     }
 
     #[\Override]
@@ -49,20 +50,26 @@ final class Connection extends AbstractConnectionMiddleware
     {
         parent::rollBack();
 
-        $this->listener->postRollBack(new TransactionEventArgs($this));
+        $this->listener->postRollBack(new TransactionEventArgs($this->driver));
     }
 
     #[\Override]
-    public function exec(string $sql): int|string
+    public function exec(string $sql): int
     {
         if (str_starts_with($sql, 'ROLLBACK')) {
-            $this->listener->postRollBack(new TransactionEventArgs($this));
+            $this->listener->postRollBack(new TransactionEventArgs($this->driver));
         } elseif (str_starts_with($sql, 'RELEASE')) {
-            $this->listener->postCommit(new TransactionEventArgs($this));
+            $this->listener->postCommit(new TransactionEventArgs($this->driver));
         } elseif (str_starts_with($sql, 'SAVEPOINT')) {
-            $this->listener->postBeginTransaction(new TransactionEventArgs($this));
+            $this->listener->postBeginTransaction(new TransactionEventArgs($this->driver));
         }
 
-        return parent::exec($sql);
+        $result = parent::exec($sql);
+
+        if (is_string($result)) {
+            return PHP_INT_MAX;
+        }
+
+        return $result;
     }
 }
