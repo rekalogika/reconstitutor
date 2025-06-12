@@ -44,7 +44,7 @@ abstract class DoctrineTestCase extends KernelTestCase
         $this->entityManager = $entityManager;
         $this->unitOfWork = $this->entityManager->getUnitOfWork();
 
-        $registry = static::getContainer()->get('rekalogika.reconstitutor.repository_registry');
+        $registry = static::getContainer()->get('rekalogika.reconstitutor.manager_context_registry');
         $this->assertInstanceOf(ManagerContextRegistry::class, $registry);
         $this->registry = $registry;
 

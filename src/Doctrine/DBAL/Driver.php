@@ -35,6 +35,7 @@ final class Driver extends AbstractDriverMiddleware
         return new Connection(
             wrappedConnection: $connection,
             listener: $this->listener,
+            driver: $this,
         );
     }
 }

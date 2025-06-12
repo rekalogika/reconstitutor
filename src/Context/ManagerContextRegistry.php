@@ -13,9 +13,10 @@ declare(strict_types=1);
 
 namespace Rekalogika\Reconstitutor\Context;
 
-use Doctrine\DBAL\Driver\Connection;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\Persistence\ManagerRegistry;
 use Doctrine\Persistence\ObjectManager;
+use Rekalogika\Reconstitutor\Doctrine\DBAL\Driver;
 use Symfony\Contracts\Service\ResetInterface;
 
 final class ManagerContextRegistry implements ResetInterface, \Countable
@@ -23,24 +24,25 @@ final class ManagerContextRegistry implements ResetInterface, \Countable
     /**
      * @var \WeakMap<ObjectManager,ManagerContext>
      */
-    private \WeakMap $managerToRepository;
+    private \WeakMap $managerToContext;
 
-    public function __construct()
-    {
+    public function __construct(
+        private readonly ManagerRegistry $managerRegistry,
+    ) {
         $this->init();
     }
 
     #[\Override]
     public function count(): int
     {
-        return \count($this->managerToRepository);
+        return \count($this->managerToContext);
     }
 
     private function init(): void
     {
         /** @var \WeakMap<ObjectManager,ManagerContext> */
-        $objectManagerToRepository = new \WeakMap();
-        $this->managerToRepository = $objectManagerToRepository;
+        $managerToContext = new \WeakMap();
+        $this->managerToContext = $managerToContext;
     }
 
     #[\Override]
@@ -51,31 +53,32 @@ final class ManagerContextRegistry implements ResetInterface, \Countable
 
     public function remove(ObjectManager $manager): void
     {
-        unset($this->managerToRepository[$manager]);
+        unset($this->managerToContext[$manager]);
     }
 
     public function get(ObjectManager $manager): ManagerContext
     {
-        if (!isset($this->managerToRepository[$manager])) {
-            $this->managerToRepository[$manager] = new ManagerContext();
+        if (!isset($this->managerToContext[$manager])) {
+            $this->managerToContext[$manager] = new ManagerContext();
         }
 
         /** @var ManagerContext */
-        return $this->managerToRepository[$manager];
+        return $this->managerToContext[$manager];
     }
 
     /**
      * @return iterable<ObjectManager>
      */
-    public function getObjectManagersFromDriverConnection(
-        Connection $connection,
-    ): iterable {
-        foreach ($this->managerToRepository as $manager => $_) {
+    public function getObjectManagersFromDriver(Driver $driver): iterable
+    {
+        foreach ($this->managerRegistry->getManagers() as $manager) {
             if (!$manager instanceof EntityManagerInterface) {
                 continue;
             }
 
-            if ($manager->getConnection()->getNativeConnection() === $connection->getNativeConnection()) {
+            if (
+                $manager->getConnection()->getDriver() === $driver
+            ) {
                 yield $manager;
             }
         }

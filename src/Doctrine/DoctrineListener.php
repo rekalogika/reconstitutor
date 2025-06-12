@@ -161,7 +161,7 @@ final readonly class DoctrineListener
     public function postBeginTransaction(TransactionEventArgs $args): void
     {
         $objectManagers = $this->registry
-            ->getObjectManagersFromDriverConnection($args->getConnection());
+            ->getObjectManagersFromDriver($args->getDriver());
 
         foreach ($objectManagers as $objectManager) {
             $context = $this->registry->get($objectManager);
@@ -177,7 +177,7 @@ final readonly class DoctrineListener
     public function postCommit(TransactionEventArgs $args): void
     {
         $objectManagers = $this->registry
-            ->getObjectManagersFromDriverConnection($args->getConnection());
+            ->getObjectManagersFromDriver($args->getDriver());
 
         foreach ($objectManagers as $objectManager) {
             $context = $this->registry->get($objectManager);
@@ -195,7 +195,7 @@ final readonly class DoctrineListener
     public function postRollback(TransactionEventArgs $args): void
     {
         $objectManagers = $this->registry
-            ->getObjectManagersFromDriverConnection($args->getConnection());
+            ->getObjectManagersFromDriver($args->getDriver());
 
         foreach ($objectManagers as $objectManager) {
             $context = $this->registry->get($objectManager);

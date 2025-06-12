@@ -97,12 +97,15 @@ return static function (ContainerConfigurator $containerConfigurator): void {
     ;
 
     //
-    // reconstitutor repository
+    // manager context registry
     //
 
     $services
-        ->set('rekalogika.reconstitutor.repository_registry')
+        ->set('rekalogika.reconstitutor.manager_context_registry')
         ->class(ManagerContextRegistry::class)
+        ->args([
+            service('doctrine'),
+        ])
         ->tag('kernel.reset', [
             'method' => 'reset',
         ])
@@ -135,7 +138,7 @@ return static function (ContainerConfigurator $containerConfigurator): void {
         ])
         ->args([
             service('rekalogika.reconstitutor.processor'),
-            service('rekalogika.reconstitutor.repository_registry'),
+            service('rekalogika.reconstitutor.manager_context_registry'),
         ])
     ;
 
@@ -146,7 +149,9 @@ return static function (ContainerConfigurator $containerConfigurator): void {
     $services
         ->set('rekalogika.reconstitutor.doctrine.middleware')
         ->class(Middleware::class)
-        ->tag('doctrine.middleware')
+        ->tag('doctrine.middleware', [
+            'priority' => PHP_INT_MIN,
+        ])
         ->args([
             service('rekalogika.reconstitutor.doctrine_listener'),
         ])
