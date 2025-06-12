@@ -18,7 +18,7 @@ use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\ORM\Tools\SchemaTool;
 use Doctrine\ORM\UnitOfWork;
 use Doctrine\Persistence\Proxy;
-use Rekalogika\Reconstitutor\Repository\RepositoryRegistry;
+use Rekalogika\Reconstitutor\Context\ManagerContextRegistry;
 use Rekalogika\Reconstitutor\Tests\EventRecorder\EventRecorder;
 use Rekalogika\Reconstitutor\Tests\EventRecorder\EventType;
 use Rekalogika\Reconstitutor\Tests\Reconstitutor\DoctrinePostReconstitutor;
@@ -28,7 +28,7 @@ use Symfony\Component\HttpKernel\DependencyInjection\ServicesResetter;
 abstract class DoctrineTestCase extends KernelTestCase
 {
     protected EntityManagerInterface $entityManager;
-    protected RepositoryRegistry $registry;
+    protected ManagerContextRegistry $registry;
     protected DoctrinePostReconstitutor $reconstitutor;
     protected ServicesResetter $resetter;
     protected UnitOfWork $unitOfWork;
@@ -45,7 +45,7 @@ abstract class DoctrineTestCase extends KernelTestCase
         $this->unitOfWork = $this->entityManager->getUnitOfWork();
 
         $registry = static::getContainer()->get('rekalogika.reconstitutor.repository_registry');
-        $this->assertInstanceOf(RepositoryRegistry::class, $registry);
+        $this->assertInstanceOf(ManagerContextRegistry::class, $registry);
         $this->registry = $registry;
 
         /** @var list<ClassMetadata<object>> */

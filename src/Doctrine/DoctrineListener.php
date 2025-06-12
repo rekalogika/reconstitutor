@@ -17,21 +17,20 @@ use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Event\OnClearEventArgs;
 use Doctrine\ORM\Event\PostFlushEventArgs;
 use Doctrine\ORM\Event\PostLoadEventArgs;
-use Doctrine\ORM\Event\PostRemoveEventArgs;
 use Doctrine\ORM\Event\PreFlushEventArgs;
 use Doctrine\ORM\Event\PrePersistEventArgs;
 use Doctrine\ORM\Event\PreRemoveEventArgs;
 use Doctrine\Persistence\ObjectManager;
 use Doctrine\Persistence\Proxy;
+use Rekalogika\Reconstitutor\Context\ManagerContextRegistry;
 use Rekalogika\Reconstitutor\Exception\LogicException;
 use Rekalogika\Reconstitutor\ReconstitutorProcessor;
-use Rekalogika\Reconstitutor\Repository\RepositoryRegistry;
 
 final readonly class DoctrineListener
 {
     public function __construct(
         private ReconstitutorProcessor $processor,
-        private RepositoryRegistry $registry,
+        private ManagerContextRegistry $registry,
     ) {}
 
     public function prePersist(PrePersistEventArgs $args): void
@@ -61,10 +60,10 @@ final readonly class DoctrineListener
     public function postFlush(PostFlushEventArgs $args): void
     {
         $objectManager = $args->getObjectManager();
-        $objectRepository = $this->registry->get($objectManager);
-        $objectRepository->setInFlush(false);
+        $context = $this->registry->get($objectManager);
+        $context->setInFlush(false);
 
-        if ($objectRepository->isInTransaction()) {
+        if ($context->isInTransaction()) {
             return;
         }
 
@@ -97,7 +96,7 @@ final readonly class DoctrineListener
                     continue;
                 }
 
-                // reconcile the object with the repository
+                // reconcile objects
                 $this->registry->get($objectManager)->addForReconciliation($object);
 
                 // call onSave
@@ -142,7 +141,7 @@ final readonly class DoctrineListener
 
         $this->initializeProxy($object);
 
-        // add to repository
+        // add to context
 
         $objectManager = $args->getObjectManager();
         $this->registry->get($objectManager)->addForRemoval($object);
@@ -165,13 +164,13 @@ final readonly class DoctrineListener
             ->getObjectManagersFromDriverConnection($args->getConnection());
 
         foreach ($objectManagers as $objectManager) {
-            $objectRepository = $this->registry->get($objectManager);
+            $context = $this->registry->get($objectManager);
 
-            if ($objectRepository->isInFlush()) {
+            if ($context->isInFlush()) {
                 continue;
             }
 
-            $objectRepository->beginTransaction();
+            $context->beginTransaction();
         }
     }
 
@@ -181,13 +180,13 @@ final readonly class DoctrineListener
             ->getObjectManagersFromDriverConnection($args->getConnection());
 
         foreach ($objectManagers as $objectManager) {
-            $objectRepository = $this->registry->get($objectManager);
+            $context = $this->registry->get($objectManager);
 
-            if ($objectRepository->isInFlush()) {
+            if ($context->isInFlush()) {
                 continue;
             }
 
-            $objectRepository->commit();
+            $context->commit();
 
             $this->finish($objectManager);
         }
@@ -199,13 +198,13 @@ final readonly class DoctrineListener
             ->getObjectManagersFromDriverConnection($args->getConnection());
 
         foreach ($objectManagers as $objectManager) {
-            $objectRepository = $this->registry->get($objectManager);
+            $context = $this->registry->get($objectManager);
 
-            if ($objectRepository->isInFlush()) {
+            if ($context->isInFlush()) {
                 continue;
             }
 
-            $objectRepository->rollback();
+            $context->rollback();
         }
     }
 

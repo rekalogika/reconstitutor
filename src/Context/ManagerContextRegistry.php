@@ -11,17 +11,17 @@ declare(strict_types=1);
  * that was distributed with this source code.
  */
 
-namespace Rekalogika\Reconstitutor\Repository;
+namespace Rekalogika\Reconstitutor\Context;
 
 use Doctrine\DBAL\Driver\Connection;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ObjectManager;
 use Symfony\Contracts\Service\ResetInterface;
 
-final class RepositoryRegistry implements ResetInterface, \Countable
+final class ManagerContextRegistry implements ResetInterface, \Countable
 {
     /**
-     * @var \WeakMap<ObjectManager,ObjectRepository>
+     * @var \WeakMap<ObjectManager,ManagerContext>
      */
     private \WeakMap $managerToRepository;
 
@@ -38,7 +38,7 @@ final class RepositoryRegistry implements ResetInterface, \Countable
 
     private function init(): void
     {
-        /** @var \WeakMap<ObjectManager,ObjectRepository> */
+        /** @var \WeakMap<ObjectManager,ManagerContext> */
         $objectManagerToRepository = new \WeakMap();
         $this->managerToRepository = $objectManagerToRepository;
     }
@@ -54,34 +54,30 @@ final class RepositoryRegistry implements ResetInterface, \Countable
         unset($this->managerToRepository[$manager]);
     }
 
-    public function get(ObjectManager $manager): ObjectRepository
+    public function get(ObjectManager $manager): ManagerContext
     {
         if (!isset($this->managerToRepository[$manager])) {
-            $this->managerToRepository[$manager] = new ObjectRepository();
+            $this->managerToRepository[$manager] = new ManagerContext();
         }
 
-        /** @var ObjectRepository */
+        /** @var ManagerContext */
         return $this->managerToRepository[$manager];
     }
 
     /**
-     * @return list<ObjectManager>
+     * @return iterable<ObjectManager>
      */
     public function getObjectManagersFromDriverConnection(
         Connection $connection,
-    ): array {
-        $managers = [];
-
+    ): iterable {
         foreach ($this->managerToRepository as $manager => $_) {
             if (!$manager instanceof EntityManagerInterface) {
                 continue;
             }
 
             if ($manager->getConnection()->getNativeConnection() === $connection->getNativeConnection()) {
-                $managers[] = $manager;
+                yield $manager;
             }
         }
-
-        return $managers;
     }
 }
