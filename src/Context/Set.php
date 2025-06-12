@@ -55,4 +55,13 @@ final class Set implements \Countable, \IteratorAggregate
     {
         return isset($this->objects[spl_object_id($object)]);
     }
+
+    public function moveObjectsTo(Set $target): void
+    {
+        foreach ($this->objects as $object) {
+            $target->add($object);
+        }
+
+        $this->objects = [];
+    }
 }

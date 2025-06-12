@@ -51,4 +51,18 @@ final class Connection extends AbstractConnectionMiddleware
 
         $this->listener->postRollBack(new TransactionEventArgs($this));
     }
+
+    #[\Override]
+    public function exec(string $sql): int|string
+    {
+        if (str_starts_with($sql, 'ROLLBACK')) {
+            $this->listener->postRollBack(new TransactionEventArgs($this));
+        } elseif (str_starts_with($sql, 'RELEASE')) {
+            $this->listener->postCommit(new TransactionEventArgs($this));
+        } elseif (str_starts_with($sql, 'SAVEPOINT')) {
+            $this->listener->postBeginTransaction(new TransactionEventArgs($this));
+        }
+
+        return parent::exec($sql);
+    }
 }
