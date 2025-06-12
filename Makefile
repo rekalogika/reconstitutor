@@ -1,3 +1,5 @@
+PHP=php
+
 .PHONY: test
 test: phpstan psalm phpunit
 
@@ -7,11 +9,11 @@ clean:
 
 .PHONY: phpstan
 phpstan:
-	vendor/bin/phpstan analyse
+	$(PHP) vendor/bin/phpstan analyse
 
 .PHONY: psalm
 psalm:
-	vendor/bin/psalm --no-cache
+	$(PHP) vendor/bin/psalm --no-cache
 
 .PHONY: phpunit
 phpunit:

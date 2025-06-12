@@ -140,6 +140,7 @@ final class DoctrineTest extends DoctrineTestCase
 
         $this->entityManager->persist($post);
         $this->entityManager->flush();
+        $this->assertPostImageExists($id);
 
         // clear
         $this->entityManager->clear();
@@ -153,10 +154,10 @@ final class DoctrineTest extends DoctrineTestCase
         $this->entityManager->remove($post);
         $this->assertNotProxy($post);
         $this->assertEquals($id, $post->getId());
+        $this->assertPostImageExists($id);
 
         $this->entityManager->flush();
-        $this->assertNotProxy($post);
-        $this->assertEquals($id, $post->getId());
+        $this->assertPostImageNotExists($id);
 
         // clear
         $this->entityManager->clear();
@@ -289,5 +290,49 @@ final class DoctrineTest extends DoctrineTestCase
 
         // check in reconstitutor
         $this->assertCountEvents(0, type: EventType::onClear, id: $post->getId());
+    }
+
+    public function testRemoveInTransactionRollback(): void
+    {
+        // create the entity
+        $post = new Post('title');
+        $post->setImage('someImage');
+        $id = $post->getId();
+
+        $this->entityManager->persist($post);
+        $this->entityManager->flush();
+
+        // remove the post in a transaction
+        $this->assertPostImageExists($id);
+        $this->entityManager->beginTransaction();
+        $this->assertPostImageExists($id);
+        $this->entityManager->remove($post);
+        $this->assertPostImageExists($id);
+        $this->entityManager->flush();
+        $this->assertPostImageExists($id);
+        $this->entityManager->rollback();
+        $this->assertPostImageExists($id);
+    }
+
+    public function testRemoveInTransactionCommit(): void
+    {
+        // create the entity
+        $post = new Post('title');
+        $post->setImage('someImage');
+        $id = $post->getId();
+
+        $this->entityManager->persist($post);
+        $this->entityManager->flush();
+
+        // remove the post in a transaction
+        $this->assertPostImageExists($id);
+        $this->entityManager->beginTransaction();
+        $this->assertPostImageExists($id);
+        $this->entityManager->remove($post);
+        $this->assertPostImageExists($id);
+        $this->entityManager->flush();
+        $this->assertPostImageExists($id);
+        $this->entityManager->commit();
+        $this->assertPostImageNotExists($id);
     }
 }

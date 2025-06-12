@@ -13,26 +13,26 @@ declare(strict_types=1);
 
 namespace Rekalogika\Reconstitutor\Doctrine;
 
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Event\OnClearEventArgs;
 use Doctrine\ORM\Event\PostFlushEventArgs;
 use Doctrine\ORM\Event\PostLoadEventArgs;
 use Doctrine\ORM\Event\PostRemoveEventArgs;
+use Doctrine\ORM\Event\PreFlushEventArgs;
 use Doctrine\ORM\Event\PrePersistEventArgs;
 use Doctrine\ORM\Event\PreRemoveEventArgs;
+use Doctrine\Persistence\ObjectManager;
 use Doctrine\Persistence\Proxy;
+use Rekalogika\Reconstitutor\Exception\LogicException;
 use Rekalogika\Reconstitutor\ReconstitutorProcessor;
 use Rekalogika\Reconstitutor\Repository\RepositoryRegistry;
-use Symfony\Contracts\Service\ResetInterface;
 
-final class DoctrineListener implements ResetInterface
+final readonly class DoctrineListener
 {
     public function __construct(
-        private readonly ReconstitutorProcessor $processor,
-        private readonly RepositoryRegistry $registry,
+        private ReconstitutorProcessor $processor,
+        private RepositoryRegistry $registry,
     ) {}
-
-    #[\Override]
-    public function reset(): void {}
 
     public function prePersist(PrePersistEventArgs $args): void
     {
@@ -52,17 +52,41 @@ final class DoctrineListener implements ResetInterface
         $this->processor->onLoad($object);
     }
 
+    public function preFlush(PreFlushEventArgs $args): void
+    {
+        $objectManager = $args->getObjectManager();
+        $this->registry->get($objectManager)->setInFlush(true);
+    }
+
     public function postFlush(PostFlushEventArgs $args): void
     {
         $objectManager = $args->getObjectManager();
+        $objectRepository = $this->registry->get($objectManager);
+        $objectRepository->setInFlush(false);
+
+        if ($objectRepository->isInTransaction()) {
+            return;
+        }
+
+        $this->finish($objectManager);
+    }
+
+    private function finish(ObjectManager $objectManager): void
+    {
+        if (!$objectManager instanceof EntityManagerInterface) {
+            throw new LogicException('Reconstitutor currently only works with EntityManagerInterface.');
+        }
+
         $unitOfWork = $objectManager->getUnitOfWork();
+
+        // save
 
         foreach ($unitOfWork->getIdentityMap() as $objects) {
             foreach ($objects as $object) {
                 // do not call onSave if we don't know anything about the object,
                 // i.e. it is an uninitialized proxy
 
-                if (!$this->registry->get($objectManager)->exists($object)) {
+                if (!$this->registry->get($objectManager)->contains($object)) {
                     continue;
                 }
 
@@ -81,10 +105,21 @@ final class DoctrineListener implements ResetInterface
             }
         }
 
+        // removal
+
+        $objectsToRemove = $this->registry
+            ->get($objectManager)
+            ->popObjectsForRemoval();
+
+        foreach ($objectsToRemove as $object) {
+            $this->processor->onRemove($object);
+        }
+
         // missing objects are the object that was previously `detach()`ed
+
         $missingObjects = $this->registry
             ->get($objectManager)
-            ->doReconciliation();
+            ->reconcile();
 
         foreach ($missingObjects as $object) {
             $this->processor->onClear($object);
@@ -106,15 +141,11 @@ final class DoctrineListener implements ResetInterface
         // contain an uninitializable proxy, unless we initialize it here first.
 
         $this->initializeProxy($object);
-    }
 
-    public function postRemove(PostRemoveEventArgs $args): void
-    {
-        $object = $args->getObject();
+        // add to repository
+
         $objectManager = $args->getObjectManager();
-
-        $this->registry->get($objectManager)->remove($object);
-        $this->processor->onRemove($object);
+        $this->registry->get($objectManager)->addForRemoval($object);
     }
 
     public function onClear(OnClearEventArgs $args): void
@@ -128,11 +159,55 @@ final class DoctrineListener implements ResetInterface
         $this->registry->get($objectManager)->clear();
     }
 
-    public function postBeginTransaction(TransactionEventArgs $args): void {}
+    public function postBeginTransaction(TransactionEventArgs $args): void
+    {
+        $objectManagers = $this->registry
+            ->getObjectManagersFromDriverConnection($args->getConnection());
 
-    public function postCommit(TransactionEventArgs $args): void {}
+        foreach ($objectManagers as $objectManager) {
+            $objectRepository = $this->registry->get($objectManager);
 
-    public function postRollback(TransactionEventArgs $args): void {}
+            if ($objectRepository->isInFlush()) {
+                continue;
+            }
+
+            $objectRepository->beginTransaction();
+        }
+    }
+
+    public function postCommit(TransactionEventArgs $args): void
+    {
+        $objectManagers = $this->registry
+            ->getObjectManagersFromDriverConnection($args->getConnection());
+
+        foreach ($objectManagers as $objectManager) {
+            $objectRepository = $this->registry->get($objectManager);
+
+            if ($objectRepository->isInFlush()) {
+                continue;
+            }
+
+            $objectRepository->commit();
+
+            $this->finish($objectManager);
+        }
+    }
+
+    public function postRollback(TransactionEventArgs $args): void
+    {
+        $objectManagers = $this->registry
+            ->getObjectManagersFromDriverConnection($args->getConnection());
+
+        foreach ($objectManagers as $objectManager) {
+            $objectRepository = $this->registry->get($objectManager);
+
+            if ($objectRepository->isInFlush()) {
+                continue;
+            }
+
+            $objectRepository->rollback();
+        }
+    }
 
     private function isUninitializedProxy(object $object): bool
     {

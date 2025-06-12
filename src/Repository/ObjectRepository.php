@@ -14,19 +14,19 @@ declare(strict_types=1);
 namespace Rekalogika\Reconstitutor\Repository;
 
 /**
+ * Tracks the objects managed by an object manager.
+ *
  * @implements \IteratorAggregate<int,object>
  */
 final class ObjectRepository implements \Countable, \IteratorAggregate
 {
-    /**
-     * @var \WeakMap<object,true>
-     */
-    private \WeakMap $objects;
+    private Set $objects;
+    private Set $objectsToRemove;
 
-    /**
-     * @var array<int,object>
-     */
-    private array $objectsInUnitOfWork = [];
+    private Set $objectsInUnitOfWork;
+
+    private ?self $transactionScope = null;
+    private bool $inFlush = false;
 
     public function __construct()
     {
@@ -36,7 +36,7 @@ final class ObjectRepository implements \Countable, \IteratorAggregate
     #[\Override]
     public function getIterator(): \Traversable
     {
-        foreach ($this->objects as $object => $_) {
+        foreach ($this->objects as $object) {
             yield $object;
         }
     }
@@ -49,32 +49,135 @@ final class ObjectRepository implements \Countable, \IteratorAggregate
 
     private function init(): void
     {
-        /** @var \WeakMap<object,true> */
-        $objects = new \WeakMap();
-        $this->objects = $objects;
-
-        $this->objectsInUnitOfWork = [];
+        $this->objects = new Set();
+        $this->objectsToRemove = new Set();
+        $this->objectsInUnitOfWork = new Set();
+        $this->transactionScope = null;
+        $this->inFlush = false;
     }
+
+    //
+    // operation
+    //
 
     public function clear(): void
     {
-        $this->init();
+        // clear only on top level scope
+
+        if ($this->transactionScope === null) {
+            $this->init();
+        }
     }
 
     public function add(object $object): void
     {
-        $this->objects[$object] = true;
+        if ($this->transactionScope !== null) {
+            // if we are in a transaction scope, we add the object to the
+            // transaction scope instead of the current scope
+
+            $this->transactionScope->add($object);
+            return;
+        }
+
+        $this->objects->add($object);
+        $this->objectsToRemove->remove($object);
     }
 
-    public function exists(object $object): bool
+    public function contains(object $object): bool
     {
-        return isset($this->objects[$object]);
+        return
+            $this->objects->contains($object)
+            || (
+                $this->transactionScope !== null
+                && $this->transactionScope->contains($object)
+            );
     }
 
-    public function remove(object $object): void
+    //
+    // flush state
+    //
+
+    public function isInFlush(): bool
     {
-        unset($this->objects[$object]);
+        return $this->inFlush;
     }
+
+    public function setInFlush(bool $inFlush): void
+    {
+        $this->inFlush = $inFlush;
+    }
+
+    //
+    // transaction
+    //
+
+    public function isInTransaction(): bool
+    {
+        return $this->transactionScope !== null;
+    }
+
+    public function beginTransaction(): void
+    {
+        if ($this->transactionScope === null) {
+            $this->transactionScope = new self();
+        } else {
+            $this->transactionScope->beginTransaction();
+        }
+    }
+
+    /**
+     * @return bool false if there is no transaction under this scope
+     */
+    public function commit(): bool
+    {
+        if ($this->transactionScope === null) {
+            return false;
+        }
+
+        $result = $this->transactionScope->commit();
+
+        // if the transaction is committed, we merge the state of the
+        // transaction scope to the current scope
+
+        if ($result === false) {
+            $transactionScope = $this->transactionScope;
+            $this->transactionScope = null;
+
+            foreach ($transactionScope->objects as $object) {
+                $this->add($object);
+            }
+
+            foreach ($transactionScope->objectsToRemove as $object) {
+                $this->addForRemoval($object);
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * @return bool false if there is no transaction in progress
+     */
+    public function rollback(): bool
+    {
+        if ($this->transactionScope === null) {
+            return false;
+        }
+
+        $result = $this->transactionScope->rollback();
+
+        // if the transaction is rolled back, we clear the transaction scope
+
+        if ($result === false) {
+            $this->transactionScope = null;
+        }
+
+        return true;
+    }
+
+    //
+    // reconcilliation
+    //
 
     /**
      * Records objects that are in doctrine's unit of work that is not an
@@ -84,7 +187,7 @@ final class ObjectRepository implements \Countable, \IteratorAggregate
      */
     public function addForReconciliation(object $object): void
     {
-        $this->objectsInUnitOfWork[spl_object_id($object)] = $object;
+        $this->objectsInUnitOfWork->add($object);
     }
 
     /**
@@ -93,19 +196,52 @@ final class ObjectRepository implements \Countable, \IteratorAggregate
      *
      * @return list<object>
      */
-    public function doReconciliation(): array
+    public function reconcile(): array
     {
         $missingObjects = [];
 
-        foreach ($this->objects as $object => $_) {
-            if (isset($this->objectsInUnitOfWork[spl_object_id($object)])) {
+        foreach ($this->objects as $object) {
+            if ($this->objectsInUnitOfWork->contains($object)) {
                 continue;
             }
 
-            $this->remove($object);
+            $this->addForRemoval($object);
             $missingObjects[] = $object;
         }
 
         return $missingObjects;
+    }
+
+    //
+    // removal
+    //
+
+    public function addForRemoval(object $object): void
+    {
+        if ($this->transactionScope !== null) {
+            // if we are in a transaction scope, we remove the object from the
+            // transaction scope instead of the current scope
+
+            $this->transactionScope->addForRemoval($object);
+            return;
+        }
+
+        $this->objects->remove($object);
+        $this->objectsToRemove->add($object);
+    }
+
+    /**
+     * @return list<object>
+     */
+    public function popObjectsForRemoval(): array
+    {
+        $objects = [];
+
+        foreach ($this->objectsToRemove as $object) {
+            $objects[] = $object;
+            $this->objectsToRemove->remove($object);
+        }
+
+        return $objects;
     }
 }
