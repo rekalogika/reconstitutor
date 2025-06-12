@@ -22,13 +22,17 @@ use Doctrine\ORM\Event\PreRemoveEventArgs;
 use Doctrine\Persistence\Proxy;
 use Rekalogika\Reconstitutor\ReconstitutorProcessor;
 use Rekalogika\Reconstitutor\Repository\RepositoryRegistry;
+use Symfony\Contracts\Service\ResetInterface;
 
-final class DoctrineListener
+final class DoctrineListener implements ResetInterface
 {
     public function __construct(
         private readonly ReconstitutorProcessor $processor,
         private readonly RepositoryRegistry $registry,
     ) {}
+
+    #[\Override]
+    public function reset(): void {}
 
     public function prePersist(PrePersistEventArgs $args): void
     {
@@ -123,6 +127,12 @@ final class DoctrineListener
 
         $this->registry->get($objectManager)->clear();
     }
+
+    public function postBeginTransaction(TransactionEventArgs $args): void {}
+
+    public function postCommit(TransactionEventArgs $args): void {}
+
+    public function postRollback(TransactionEventArgs $args): void {}
 
     private function isUninitializedProxy(object $object): bool
     {
