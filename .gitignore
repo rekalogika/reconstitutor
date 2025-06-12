@@ -5,3 +5,4 @@ vendor
 tools
 rector.log
 .vscode
+phpstan.neon

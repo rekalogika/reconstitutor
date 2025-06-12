@@ -14,26 +14,19 @@ declare(strict_types=1);
 namespace Rekalogika\Reconstitutor\Repository;
 
 /**
+ * Tracks the objects managed by an object manager.
+ *
  * @implements \IteratorAggregate<int,object>
  */
 final class ObjectRepository implements \Countable, \IteratorAggregate
 {
-    /**
-     * @var \WeakMap<object,true>
-     */
-    private \WeakMap $objects;
+    private Set $objects;
+    private Set $objectsToRemove;
 
-    /**
-     * @var \WeakMap<object,true>
-     */
-    private \WeakMap $objectsToRemove;
-
-    /**
-     * @var array<int,object>
-     */
-    private array $objectsInUnitOfWork = [];
+    private Set $objectsInUnitOfWork;
 
     private ?self $transactionScope = null;
+    private bool $inFlush = false;
 
     public function __construct()
     {
@@ -43,7 +36,7 @@ final class ObjectRepository implements \Countable, \IteratorAggregate
     #[\Override]
     public function getIterator(): \Traversable
     {
-        foreach ($this->objects as $object => $_) {
+        foreach ($this->objects as $object) {
             yield $object;
         }
     }
@@ -56,15 +49,11 @@ final class ObjectRepository implements \Countable, \IteratorAggregate
 
     private function init(): void
     {
-        /** @var \WeakMap<object,true> */
-        $objects = new \WeakMap();
-        $this->objects = $objects;
-
-        /** @var \WeakMap<object,true> */
-        $objectsToRemove = new \WeakMap();
-        $this->objectsToRemove = $objectsToRemove;
-
-        $this->objectsInUnitOfWork = [];
+        $this->objects = new Set();
+        $this->objectsToRemove = new Set();
+        $this->objectsInUnitOfWork = new Set();
+        $this->transactionScope = null;
+        $this->inFlush = false;
     }
 
     //
@@ -90,37 +79,42 @@ final class ObjectRepository implements \Countable, \IteratorAggregate
             return;
         }
 
-        $this->objects[$object] = true;
-        unset($this->objectsToRemove[$object]);
+        $this->objects->add($object);
+        $this->objectsToRemove->remove($object);
     }
 
-    public function exists(object $object): bool
+    public function contains(object $object): bool
     {
         return
-            isset($this->objects[$object])
+            $this->objects->contains($object)
             || (
                 $this->transactionScope !== null
-                && $this->transactionScope->exists($object)
+                && $this->transactionScope->contains($object)
             );
     }
 
-    public function remove(object $object): void
+    //
+    // flush state
+    //
+
+    public function isInFlush(): bool
     {
-        if ($this->transactionScope !== null) {
-            // if we are in a transaction scope, we remove the object from the
-            // transaction scope instead of the current scope
+        return $this->inFlush;
+    }
 
-            $this->transactionScope->remove($object);
-            return;
-        }
-
-        unset($this->objects[$object]);
-        $this->objectsToRemove[$object] = true;
+    public function setInFlush(bool $inFlush): void
+    {
+        $this->inFlush = $inFlush;
     }
 
     //
     // transaction
     //
+
+    public function isInTransaction(): bool
+    {
+        return $this->transactionScope !== null;
+    }
 
     public function beginTransaction(): void
     {
@@ -149,14 +143,13 @@ final class ObjectRepository implements \Countable, \IteratorAggregate
             $transactionScope = $this->transactionScope;
             $this->transactionScope = null;
 
-            foreach ($transactionScope->objects as $object => $_) {
+            foreach ($transactionScope->objects as $object) {
                 $this->add($object);
             }
 
-            foreach ($transactionScope->objectsToRemove as $object => $_) {
-                $this->remove($object);
+            foreach ($transactionScope->objectsToRemove as $object) {
+                $this->addForRemoval($object);
             }
-
         }
 
         return true;
@@ -184,7 +177,7 @@ final class ObjectRepository implements \Countable, \IteratorAggregate
 
     //
     // reconcilliation
-    // 
+    //
 
     /**
      * Records objects that are in doctrine's unit of work that is not an
@@ -194,7 +187,7 @@ final class ObjectRepository implements \Countable, \IteratorAggregate
      */
     public function addForReconciliation(object $object): void
     {
-        $this->objectsInUnitOfWork[spl_object_id($object)] = $object;
+        $this->objectsInUnitOfWork->add($object);
     }
 
     /**
@@ -203,19 +196,52 @@ final class ObjectRepository implements \Countable, \IteratorAggregate
      *
      * @return list<object>
      */
-    public function doReconciliation(): array
+    public function reconcile(): array
     {
         $missingObjects = [];
 
-        foreach ($this->objects as $object => $_) {
-            if (isset($this->objectsInUnitOfWork[spl_object_id($object)])) {
+        foreach ($this->objects as $object) {
+            if ($this->objectsInUnitOfWork->contains($object)) {
                 continue;
             }
 
-            $this->remove($object);
+            $this->addForRemoval($object);
             $missingObjects[] = $object;
         }
 
         return $missingObjects;
+    }
+
+    //
+    // removal
+    //
+
+    public function addForRemoval(object $object): void
+    {
+        if ($this->transactionScope !== null) {
+            // if we are in a transaction scope, we remove the object from the
+            // transaction scope instead of the current scope
+
+            $this->transactionScope->addForRemoval($object);
+            return;
+        }
+
+        $this->objects->remove($object);
+        $this->objectsToRemove->add($object);
+    }
+
+    /**
+     * @return list<object>
+     */
+    public function popObjectsForRemoval(): array
+    {
+        $objects = [];
+
+        foreach ($this->objectsToRemove as $object) {
+            $objects[] = $object;
+            $this->objectsToRemove->remove($object);
+        }
+
+        return $objects;
     }
 }

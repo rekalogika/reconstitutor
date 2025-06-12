@@ -122,10 +122,10 @@ return static function (ContainerConfigurator $containerConfigurator): void {
             'event' => 'preRemove',
         ])
         ->tag('doctrine.event_listener', [
-            'event' => 'postRemove',
+            'event' => 'postLoad',
         ])
         ->tag('doctrine.event_listener', [
-            'event' => 'postLoad',
+            'event' => 'preFlush',
         ])
         ->tag('doctrine.event_listener', [
             'event' => 'postFlush',
@@ -136,9 +136,6 @@ return static function (ContainerConfigurator $containerConfigurator): void {
         ->args([
             service('rekalogika.reconstitutor.processor'),
             service('rekalogika.reconstitutor.repository_registry'),
-        ])
-        ->tag('kernel.reset', [
-            'method' => 'reset',
         ])
     ;
 

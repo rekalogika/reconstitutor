@@ -13,6 +13,8 @@ declare(strict_types=1);
 
 namespace Rekalogika\Reconstitutor\Repository;
 
+use Doctrine\DBAL\Driver\Connection;
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ObjectManager;
 use Symfony\Contracts\Service\ResetInterface;
 
@@ -60,5 +62,26 @@ final class RepositoryRegistry implements ResetInterface, \Countable
 
         /** @var ObjectRepository */
         return $this->managerToRepository[$manager];
+    }
+
+    /**
+     * @return list<ObjectManager>
+     */
+    public function getObjectManagersFromDriverConnection(
+        Connection $connection,
+    ): array {
+        $managers = [];
+
+        foreach ($this->managerToRepository as $manager => $_) {
+            if (!$manager instanceof EntityManagerInterface) {
+                continue;
+            }
+
+            if ($manager->getConnection()->getNativeConnection() === $connection->getNativeConnection()) {
+                $managers[] = $manager;
+            }
+        }
+
+        return $managers;
     }
 }
