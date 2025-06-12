@@ -11,11 +11,11 @@ declare(strict_types=1);
  * that was distributed with this source code.
  */
 
+use Rekalogika\Reconstitutor\Context\ManagerContextRegistry;
 use Rekalogika\Reconstitutor\Doctrine\DoctrineListener;
 use Rekalogika\Reconstitutor\Doctrine\Middleware;
 use Rekalogika\Reconstitutor\ReconstitutorContainer;
 use Rekalogika\Reconstitutor\ReconstitutorProcessor;
-use Rekalogika\Reconstitutor\Repository\RepositoryRegistry;
 use Rekalogika\Reconstitutor\Resolver\AttributeReconstitutorResolver;
 use Rekalogika\Reconstitutor\Resolver\CachingReconstitutorResolver;
 use Rekalogika\Reconstitutor\Resolver\ChainReconstitutorResolver;
@@ -102,7 +102,7 @@ return static function (ContainerConfigurator $containerConfigurator): void {
 
     $services
         ->set('rekalogika.reconstitutor.repository_registry')
-        ->class(RepositoryRegistry::class)
+        ->class(ManagerContextRegistry::class)
         ->tag('kernel.reset', [
             'method' => 'reset',
         ])

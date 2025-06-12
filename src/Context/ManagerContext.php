@@ -11,14 +11,14 @@ declare(strict_types=1);
  * that was distributed with this source code.
  */
 
-namespace Rekalogika\Reconstitutor\Repository;
+namespace Rekalogika\Reconstitutor\Context;
 
 /**
  * Tracks the objects managed by an object manager.
  *
  * @implements \IteratorAggregate<int,object>
  */
-final class ObjectRepository implements \Countable, \IteratorAggregate
+final class ManagerContext implements \Countable, \IteratorAggregate
 {
     private Set $objects;
     private Set $objectsToRemove;
