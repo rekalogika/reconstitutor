@@ -120,6 +120,9 @@ final class ManagerContext implements \Countable, \IteratorAggregate
     {
         if ($this->transactionScope === null) {
             $this->transactionScope = new self();
+
+            $this->objects->moveObjectsTo($this->transactionScope->objects);
+            $this->objectsToRemove->moveObjectsTo($this->transactionScope->objectsToRemove);
         } else {
             $this->transactionScope->beginTransaction();
         }
