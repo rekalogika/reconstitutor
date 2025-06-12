@@ -12,6 +12,7 @@ declare(strict_types=1);
  */
 
 use Rekalogika\Reconstitutor\Doctrine\DoctrineListener;
+use Rekalogika\Reconstitutor\Doctrine\Middleware;
 use Rekalogika\Reconstitutor\ReconstitutorContainer;
 use Rekalogika\Reconstitutor\ReconstitutorProcessor;
 use Rekalogika\Reconstitutor\Repository\RepositoryRegistry;
@@ -135,5 +136,22 @@ return static function (ContainerConfigurator $containerConfigurator): void {
         ->args([
             service('rekalogika.reconstitutor.processor'),
             service('rekalogika.reconstitutor.repository_registry'),
-        ]);
+        ])
+        ->tag('kernel.reset', [
+            'method' => 'reset',
+        ])
+    ;
+
+    //
+    // doctrine middleware
+    //
+
+    $services
+        ->set('rekalogika.reconstitutor.doctrine.middleware')
+        ->class(Middleware::class)
+        ->tag('doctrine.middleware')
+        ->args([
+            service('rekalogika.reconstitutor.doctrine_listener'),
+        ])
+    ;
 };
