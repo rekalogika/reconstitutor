@@ -19,6 +19,7 @@ use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\ORM\Tools\SchemaTool;
 use Doctrine\ORM\UnitOfWork;
 use Doctrine\Persistence\Proxy;
+use Rekalogika\Reconstitutor\Tests\Entity\Poison;
 use Rekalogika\Reconstitutor\Tests\Entity\Post;
 use Rekalogika\Reconstitutor\Tests\Reconstitutor\DoctrinePostReconstitutor;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
@@ -184,6 +185,23 @@ abstract class EntityTestCase extends KernelTestCase
     protected function close(): void
     {
         $this->entityManager->close();
+    }
+
+    //
+    // misc
+    //
+
+    /**
+     * Add invalid data to unit of work, by persisting two entities with the
+     * same property value and unique constraint.
+     */
+    protected function poison(): void
+    {
+        $poison1 = new Poison();
+        $poison2 = new Poison();
+
+        $this->entityManager->persist($poison1);
+        $this->entityManager->persist($poison2);
     }
 
     //
