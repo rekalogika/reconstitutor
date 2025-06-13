@@ -13,327 +13,230 @@ declare(strict_types=1);
 
 namespace Rekalogika\Reconstitutor\Tests\Tests;
 
-use Rekalogika\Reconstitutor\Tests\Entity\Comment;
-use Rekalogika\Reconstitutor\Tests\Entity\Other;
-use Rekalogika\Reconstitutor\Tests\Entity\Post;
-use Rekalogika\Reconstitutor\Tests\EventRecorder\EventType;
-
-final class DoctrineTest extends DoctrineTestCase
+final class DoctrineTest extends EntityTestCase
 {
-    public function testLifeCycle(): void
+    public function testPersist(): void
     {
-        // create the entities
-        $post = new Post('title');
-        $post->setImage('someImage');
+        $this->instantiate();
 
-        $comment = new Comment('content');
-        $post->addComment($comment);
-        $this->entityManager->persist($post);
-        $this->entityManager->persist($comment);
-        $this->entityManager->flush();
+        $this->persist();
 
-        // clear
-        $this->entityManager->clear();
-
-        // reload from database
-        $id = $post->getId();
-        $post = $this->entityManager->find(Post::class, $id);
-        $this->assertInstanceOf(Post::class, $post);
-        $this->assertSame('title', $post->getTitle());
-        $this->assertSame('someImage', $post->getImage());
-        $this->assertCount(1, $post->getComments());
-
-        // remove image
-        $post->setImage(null);
-        $this->entityManager->flush();
-
-        // clear
-        $this->entityManager->clear();
-
-        // reload from database
-        $post = $this->entityManager->find(Post::class, $id);
-        $this->assertInstanceOf(Post::class, $post);
-        $this->assertSame('title', $post->getTitle());
-        $this->assertNull($post->getImage());
-        $this->assertCount(1, $post->getComments());
+        $this->assertImageNotPresent();
+        $this->assertEvents([
+            'onCreate',
+        ]);
     }
 
-    public function testProxyInitializationOnNonDoctrineManagedProperty(): void
+    public function testPersistFlush(): void
     {
-        // create the entities
-        $post = new Post('title');
-        $post->setImage('someImage');
+        $this->instantiate();
 
-        $this->entityManager->persist($post);
-        $this->entityManager->flush();
+        $this->persist();
+        $this->assertImageNotPresent();
+        $this->flush();
 
-        // clear
-        $this->entityManager->clear();
-
-        // reload from database
-        $post = $this->entityManager->getReference(Post::class, $post->getId());
-        $this->assertInstanceOf(Post::class, $post);
-        $this->assertIsProxy($post);
-        $this->assertEquals('someImage', $post->getImage());
-        $this->assertNotProxy($post);
+        $this->assertImagePresent();
+        $this->assertEvents([
+            'onCreate',
+            'onSave',
+        ]);
     }
 
-    public function testFlushUninitializedProxy(): void
+    public function testLoadRemoveFlush(): void
     {
-        // create the entities
-        $post = new Post('title');
-        $post->setImage('someImage');
+        $this->init();
 
-        $this->entityManager->persist($post);
-        $this->entityManager->flush();
+        $this->load();
+        $this->remove();
+        $this->flush();
 
-        // clear
-        $this->entityManager->clear();
-
-        // reload from database
-        $post = $this->entityManager->getReference(Post::class, $post->getId());
-        $this->assertInstanceOf(Post::class, $post);
-        $this->assertIsProxy($post);
-
-        // this flush should not remove the image
-        $this->entityManager->flush();
-
-        // clear
-        $this->entityManager->clear();
-
-        // reload from database
-        $post = $this->entityManager->getReference(Post::class, $post->getId());
-        $this->assertInstanceOf(Post::class, $post);
-        $this->assertIsProxy($post);
-
-        // make sure the flush did not remove the image
-        $this->assertEquals('someImage', $post->getImage());
-        $this->assertNotProxy($post);
+        $this->assertImageNotPresent();
+        $this->assertEvents([
+            'onLoad',
+            'onRemove',
+        ]);
     }
 
-    public function testRemove(): void
+    /**
+     * Note: object is not managed
+     */
+    public function testFlush(): void
     {
-        // create the entities
-        $post = new Post('title');
-        $post->setImage('someImage');
-        $id = $post->getId();
+        $this->instantiate();
 
-        $this->entityManager->persist($post);
-        $this->entityManager->flush();
+        $this->flush();
 
-        // remove the post
-        $this->entityManager->remove($post);
-        $this->assertNotProxy($post);
-        $this->assertEquals($id, $post->getId());
-        $this->entityManager->flush();
-
-        // check in reconstitutor
-        $this->assertEventRecorded($post, type: EventType::onRemove);
+        $this->assertImageNotPresent();
+        $this->assertEvents([]);
     }
 
-    public function testRemoveUninitializedProxy(): void
+    /**
+     * Note: object is not managed
+     */
+    public function testRemoveFlush(): void
     {
-        // create the entities
-        $post = new Post('title');
-        $post->setImage('someImage');
-        $id = $post->getId();
+        $this->instantiate();
 
-        $this->entityManager->persist($post);
-        $this->entityManager->flush();
-        $this->assertPostImageExists($id);
+        $this->remove();
+        $this->flush();
 
-        // clear
-        $this->entityManager->clear();
-
-        // reload from database
-        $post = $this->entityManager->getReference(Post::class, $post->getId());
-        $this->assertInstanceOf(Post::class, $post);
-        $this->assertIsProxy($post);
-
-        // remove the post
-        $this->entityManager->remove($post);
-        $this->assertNotProxy($post);
-        $this->assertEquals($id, $post->getId());
-        $this->assertPostImageExists($id);
-
-        $this->entityManager->flush();
-        $this->assertPostImageNotExists($id);
-
-        // clear
-        $this->entityManager->clear();
-
-        // try to reload from database
-        $post = $this->entityManager->find(Post::class, $post->getId());
-        $this->assertNull($post);
-
-        // check in reconstitutor
-        $this->assertPostImageNotExists($id);
+        $this->assertImageNotPresent();
+        $this->assertEvents([]);
     }
 
-    public function testRemoveUninitializedProxyWithoutReconstitutor(): void
+    public function testReference(): void
     {
-        // create the entities
-        $entity = new Other();
-        $id = $entity->getId();
+        $this->init();
 
-        $this->entityManager->persist($entity);
-        $this->entityManager->flush();
+        $this->reference();
 
-        // clear
-        $this->entityManager->clear();
-
-        // reload from database
-        $entity = $this->entityManager->getReference(Other::class, $entity->getId());
-        $this->assertInstanceOf(Other::class, $entity);
-        $this->assertIsProxy($entity);
-
-        // remove the entity, the entity should not be initialized
-        $this->entityManager->remove($entity);
-        $this->assertIsProxy($entity);
-        $this->assertEquals($id, $entity->getId());
-
-        $this->entityManager->flush();
-        $this->assertIsProxy($entity);
-        $this->assertEquals($id, $entity->getId());
+        $this->assertIsProxy();
+        $this->assertImagePresent();
+        $this->assertEvents([]);
     }
 
-    public function testClear(): void
+    public function testReferenceGetImage(): void
     {
-        // create the entities
-        $post = new Post('title');
-        $post->setImage('someImage');
-        $this->entityManager->persist($post);
-        $this->assertCount(1, $this->registry->get($this->entityManager));
+        $this->init();
 
-        // clear
-        $this->entityManager->clear();
-        $this->assertCount(0, $this->registry->get($this->entityManager));
+        $this->reference();
+        $this->getImage();
 
-        // check in reconstitutor
-        $this->assertEventRecorded($post, type: EventType::onClear);
+        $this->assertNotProxy();
+        $this->assertImagePresent();
+        $this->assertEvents([
+            'onLoad',
+        ]);
     }
 
-    public function testClearProxy(): void
+    public function testReferenceFlush(): void
     {
-        // create the entities
-        $post = new Post('title');
-        $post->setImage('someImage');
-        $this->entityManager->persist($post);
-        $this->assertCount(1, $this->registry->get($this->entityManager));
-        $this->entityManager->flush();
-        $this->entityManager->clear();
-        $this->eventRecorder->reset(); // reset our tracker
-        $this->assertCount(0, $this->registry->get($this->entityManager));
+        $this->init();
 
-        // reload
-        $post = $this->entityManager->getReference(Post::class, $post->getId());
-        $this->assertInstanceOf(Post::class, $post);
-        $this->assertIsProxy($post);
-        $this->assertCount(0, $this->registry->get($this->entityManager));
+        $this->reference();
+        $this->flush();
 
-        // clear should not call onClear on proxy
-        $this->entityManager->clear();
-        $this->assertCount(0, $this->registry->get($this->entityManager));
-
-        // check in reconstitutor
-        $this->assertCountEvents(0, type: EventType::onClear, id: $post->getId());
+        $this->assertIsProxy();
+        $this->assertImagePresent();
+        $this->assertEvents([]);
     }
 
-    public function testDetachInitialized(): void
+    public function testReferenceGetImageFlush(): void
     {
-        // create the entities
-        $post = new Post('title');
-        $post->setImage('someImage');
-        $this->entityManager->persist($post);
-        $this->assertCount(1, $this->registry->get($this->entityManager));
-        $this->entityManager->flush();
-        $this->entityManager->clear();
-        $this->eventRecorder->reset(); // reset our tracker
-        $this->assertCount(0, $this->registry->get($this->entityManager));
+        $this->init();
 
-        // reload
-        $post = $this->entityManager->find(Post::class, $post->getId());
-        $this->assertInstanceOf(Post::class, $post);
-        $this->assertNotProxy($post);
-        $this->assertCount(1, $this->registry->get($this->entityManager));
+        $this->reference();
+        $this->getImage();
+        $this->flush();
 
-        // detach and flush should call onClear
-        $this->entityManager->detach($post);
-        $this->entityManager->flush();
-
-        // check in reconstitutor
-        $this->assertCountEvents(1, type: EventType::onClear, id: $post->getId());
+        $this->assertNotProxy();
+        $this->assertImagePresent();
+        $this->assertEvents([
+            'onLoad',
+            'onSave',
+        ]);
     }
 
-    public function testDetachProxy(): void
+    public function testReferenceRemoveFlush(): void
     {
-        // create the entities
-        $post = new Post('title');
-        $post->setImage('someImage');
-        $this->entityManager->persist($post);
-        $this->assertCount(1, $this->registry->get($this->entityManager));
-        $this->entityManager->flush();
-        $this->entityManager->clear();
-        $this->eventRecorder->reset(); // reset our tracker
-        $this->assertCount(0, $this->registry->get($this->entityManager));
+        $this->init();
 
-        // reload
-        $post = $this->entityManager->getReference(Post::class, $post->getId());
-        $this->assertInstanceOf(Post::class, $post);
-        $this->assertCount(0, $this->registry->get($this->entityManager));
-        $this->assertIsProxy($post);
+        $this->reference();
+        $this->remove();
+        $this->flush();
 
-        // detach and flush should not call onClear on proxy
-        $this->entityManager->detach($post);
-        $this->entityManager->flush();
-        $this->assertIsProxy($post);
-
-        // check in reconstitutor
-        $this->assertCountEvents(0, type: EventType::onClear, id: $post->getId());
+        $this->assertImageNotPresent();
+        $this->assertEvents([
+            'onLoad',
+            'onRemove',
+        ]);
     }
 
-    public function testRemoveInTransactionRollback(): void
+    public function testLoadClear(): void
     {
-        // create the entity
-        $post = new Post('title');
-        $post->setImage('someImage');
-        $id = $post->getId();
+        $this->init();
 
-        $this->entityManager->persist($post);
-        $this->entityManager->flush();
+        $this->load();
+        $this->clear();
 
-        // remove the post in a transaction
-        $this->assertPostImageExists($id);
-        $this->entityManager->beginTransaction();
-        $this->assertPostImageExists($id);
-        $this->entityManager->remove($post);
-        $this->assertPostImageExists($id);
-        $this->entityManager->flush();
-        $this->assertPostImageExists($id);
-        $this->entityManager->rollback();
-        $this->assertPostImageExists($id);
+        $this->assertImagePresent();
+        $this->assertEvents([
+            'onLoad',
+            'onClear',
+        ]);
     }
 
-    public function testRemoveInTransactionCommit(): void
+    public function testReferenceClear(): void
     {
-        // create the entity
-        $post = new Post('title');
-        $post->setImage('someImage');
-        $id = $post->getId();
+        $this->init();
 
-        $this->entityManager->persist($post);
-        $this->entityManager->flush();
+        $this->reference();
+        $this->clear();
 
-        // remove the post in a transaction
-        $this->assertPostImageExists($id);
-        $this->entityManager->beginTransaction();
-        $this->assertPostImageExists($id);
-        $this->entityManager->remove($post);
-        $this->assertPostImageExists($id);
-        $this->entityManager->flush();
-        $this->assertPostImageExists($id);
-        $this->entityManager->commit();
-        $this->assertPostImageNotExists($id);
+        $this->assertImagePresent();
+        $this->assertEvents([]);
+    }
+
+    public function testReferenceGetImageClear(): void
+    {
+        $this->init();
+
+        $this->reference();
+        $this->getImage();
+        $this->clear();
+
+        $this->assertImagePresent();
+        $this->assertEvents([
+            'onLoad',
+            'onClear',
+        ]);
+    }
+
+    /**
+     * Caveat: doctrine does not emit an event on `detach()`
+     */
+    public function testLoadDetach(): void
+    {
+        $this->init();
+
+        $this->load();
+        $this->detach();
+
+        $this->assertImagePresent();
+        $this->assertEvents([
+            'onLoad',
+        ]);
+    }
+
+    /**
+     * Caveat: doctrine does not emit an event on `detach()`, we can only call
+     * onClear after `flush()`
+     */
+    public function testLoadDetachFlush(): void
+    {
+        $this->init();
+
+        $this->load();
+        $this->detach();
+        $this->flush();
+
+        $this->assertImagePresent();
+        $this->assertEvents([
+            'onLoad',
+            'onClear',
+        ]);
+    }
+
+    public function testReferenceDetachFlush(): void
+    {
+        $this->init();
+
+        $this->reference();
+        $this->detach();
+
+        $this->assertIsProxy();
+        $this->assertImagePresent();
+        $this->assertEvents([]);
     }
 
     /**
@@ -341,11 +244,17 @@ final class DoctrineTest extends DoctrineTestCase
      */
     public function testLoadRemovePersistFlush(): void
     {
-        $post = $this->loadPostWithImage();
-        $id = $post->getId();
-        $this->entityManager->remove($post);
-        $this->entityManager->persist($post);
-        $this->entityManager->flush();
-        $this->assertPostImageExists($id);
+        $this->init();
+
+        $this->load();
+        $this->remove();
+        $this->persist();
+        $this->flush();
+
+        $this->assertImagePresent();
+        $this->assertEvents([
+            'onLoad',
+            'onSave',
+        ]);
     }
 }
