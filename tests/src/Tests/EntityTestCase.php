@@ -18,6 +18,7 @@ use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\ORM\Tools\SchemaTool;
 use Doctrine\ORM\UnitOfWork;
+use Doctrine\Persistence\Proxy;
 use Rekalogika\Reconstitutor\Tests\Entity\Post;
 use Rekalogika\Reconstitutor\Tests\Reconstitutor\DoctrinePostReconstitutor;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
@@ -106,6 +107,21 @@ abstract class EntityTestCase extends KernelTestCase
         $this->id = $this->post->getId();
     }
 
+    protected function reference(): void
+    {
+        $this->assertNull($this->post);
+        $this->assertNotNull($this->id);
+        $this->post = $this->entityManager->getReference(Post::class, $this->id);
+        $this->assertInstanceOf(Post::class, $this->post);
+        $this->id = $this->post->getId();
+    }
+
+    protected function getImage(): ?string
+    {
+        $this->assertNotNull($this->post, 'Post should not be null before getting image');
+        return $this->post->getImage();
+    }
+
     protected function removeImage(): void
     {
         $this->assertNotNull($this->post);
@@ -192,5 +208,52 @@ abstract class EntityTestCase extends KernelTestCase
     protected function assertEvents(array $expectedEvents): void
     {
         $this->assertEquals($expectedEvents, $this->reconstitutor->getEvents(), 'Events should match expected events');
+    }
+
+    protected function assertIsProxy(): void
+    {
+        $object = $this->post;
+
+        $this->assertIsObject($object, 'Expected an object');
+
+        if (\PHP_VERSION_ID >= 80400) {
+            $reflection = new \ReflectionClass($object);
+            /**
+             * @psalm-suppress UndefinedMethod
+             * @psalm-suppress MixedAssignment
+             */
+            $isProxy = $reflection->isUninitializedLazyObject($object);
+
+            if ($isProxy) {
+                return;
+            }
+        }
+
+        $this->assertInstanceOf(Proxy::class, $object, 'Object is not a proxy');
+        $this->assertFalse($object->__isInitialized(), 'Object is not an uninitialized proxy');
+    }
+
+    protected function assertNotProxy(): void
+    {
+        $object = $this->post;
+
+        $this->assertIsObject($object, 'Expected an object');
+
+        if ($object instanceof Proxy) {
+            $this->assertTrue($object->__isInitialized(), 'Object is a proxy, but should not be');
+
+            return;
+        }
+
+        if (\PHP_VERSION_ID >= 80400) {
+            $reflection = new \ReflectionClass($object);
+
+            /**
+             * @psalm-suppress UndefinedMethod
+             */
+            if ($reflection->isUninitializedLazyObject($object)) {
+                static::fail('Object is a proxy, but should not be');
+            }
+        }
     }
 }

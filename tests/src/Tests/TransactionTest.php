@@ -18,6 +18,7 @@ final class TransactionTest extends EntityTestCase
     public function testPersistBeginFlushRollback(): void
     {
         $this->instantiate();
+
         $this->persist();
         $this->begin();
         $this->flush();
@@ -33,6 +34,7 @@ final class TransactionTest extends EntityTestCase
     public function testBeginPersistFlushRollback(): void
     {
         $this->instantiate();
+
         $this->begin();
         $this->persist();
         $this->flush();
@@ -48,6 +50,7 @@ final class TransactionTest extends EntityTestCase
     public function testPersistBeginFlushCommit(): void
     {
         $this->instantiate();
+
         $this->persist();
         $this->begin();
         $this->flush();
@@ -64,6 +67,7 @@ final class TransactionTest extends EntityTestCase
     public function testBeginPersistFlushCommit(): void
     {
         $this->instantiate();
+
         $this->begin();
         $this->persist();
         $this->flush();
