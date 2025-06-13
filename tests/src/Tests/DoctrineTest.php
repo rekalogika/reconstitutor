@@ -13,6 +13,8 @@ declare(strict_types=1);
 
 namespace Rekalogika\Reconstitutor\Tests\Tests;
 
+use Doctrine\DBAL\Exception\ServerException;
+
 final class DoctrineTest extends EntityTestCase
 {
     public function testPersist(): void
@@ -255,6 +257,35 @@ final class DoctrineTest extends EntityTestCase
         $this->assertEvents([
             'onLoad',
             'onSave',
+        ]);
+    }
+
+    public function testPoisonFlush(): void
+    {
+        try {
+            $this->poison();
+            $this->flush();
+        } catch (ServerException) {
+        }
+
+        $this->assertEvents([]);
+    }
+
+    public function testLoadPoisonFlush(): void
+    {
+        $this->init();
+
+        try {
+            $this->load();
+            $this->poison();
+            $this->flush();
+        } catch (ServerException) {
+        }
+
+        $this->assertImagePresent();
+        $this->assertEvents([
+            'onLoad',
+            'onClear',
         ]);
     }
 }
