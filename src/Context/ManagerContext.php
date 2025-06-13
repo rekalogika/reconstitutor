@@ -13,6 +13,10 @@ declare(strict_types=1);
 
 namespace Rekalogika\Reconstitutor\Context;
 
+use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\Persistence\ObjectManager;
+use Rekalogika\Reconstitutor\Exception\LogicException;
+
 /**
  * Tracks the objects managed by an object manager.
  *
@@ -22,7 +26,6 @@ final class ManagerContext implements \Countable, \IteratorAggregate
 {
     private Set $objects;
     private Set $objectsToRemove;
-
     private Set $objectsInUnitOfWork;
 
     private ?self $transactionScope = null;
@@ -208,6 +211,7 @@ final class ManagerContext implements \Countable, \IteratorAggregate
                 continue;
             }
 
+            // @todo should direct remove
             $this->addForRemoval($object);
             $missingObjects[] = $object;
         }
@@ -218,6 +222,21 @@ final class ManagerContext implements \Countable, \IteratorAggregate
     //
     // removal
     //
+
+    /**
+     * @return iterable<object>
+     */
+    public function getObjectsForRemoval(): iterable
+    {
+        if ($this->transactionScope !== null) {
+            // if we are in a transaction scope, we return the objects from the
+            // transaction scope instead of the current scope
+
+            return $this->transactionScope->getObjectsForRemoval();
+        }
+
+        return $this->objectsToRemove;
+    }
 
     public function addForRemoval(object $object): void
     {
@@ -231,6 +250,43 @@ final class ManagerContext implements \Countable, \IteratorAggregate
 
         $this->objects->remove($object);
         $this->objectsToRemove->add($object);
+    }
+
+    public function removeForRemoval(object $object): void
+    {
+        if ($this->transactionScope !== null) {
+            // if we are in a transaction scope, we remove the object from the
+            // transaction scope instead of the current scope
+
+            $this->transactionScope->removeForRemoval($object);
+            return;
+        }
+
+        $this->objectsToRemove->remove($object);
+        $this->objects->add($object);
+    }
+
+    /**
+     * When the caller does remove() and persist(), Doctrine does not call
+     * prePersist, so we need to objects pending removal if they are not
+     * scheduled
+     */
+    public function reconcileObjectsForRemoval(ObjectManager $objectManager): void
+    {
+        if (!$objectManager instanceof EntityManagerInterface) {
+            throw new LogicException('Reconstitutor currently only works with EntityManagerInterface.');
+        }
+
+        $unitOfWork = $objectManager->getUnitOfWork();
+
+        foreach ($this->getObjectsForRemoval() as $object) {
+            // if the object is not in the unit of work, we can remove it
+            // from the repository
+
+            if (!$unitOfWork->isScheduledForDelete($object)) {
+                $this->removeForRemoval($object);
+            }
+        }
     }
 
     /**
