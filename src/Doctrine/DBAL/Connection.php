@@ -66,7 +66,7 @@ final class Connection extends AbstractConnectionMiddleware
 
         $result = parent::exec($sql);
 
-        if (is_string($result)) {
+        if (\is_string($result)) {
             return PHP_INT_MAX;
         }
 

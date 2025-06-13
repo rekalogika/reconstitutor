@@ -335,4 +335,17 @@ final class DoctrineTest extends DoctrineTestCase
         $this->entityManager->commit();
         $this->assertPostImageNotExists($id);
     }
+
+    /**
+     * Caveat: doctrine does not call prePersist in this case
+     */
+    public function testLoadRemovePersistFlush(): void
+    {
+        $post = $this->loadPostWithImage();
+        $id = $post->getId();
+        $this->entityManager->remove($post);
+        $this->entityManager->persist($post);
+        $this->entityManager->flush();
+        $this->assertPostImageExists($id);
+    }
 }

@@ -14,11 +14,13 @@ declare(strict_types=1);
 namespace Rekalogika\Reconstitutor\Tests\Tests;
 
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\ORM\Tools\SchemaTool;
 use Doctrine\ORM\UnitOfWork;
 use Doctrine\Persistence\Proxy;
 use Rekalogika\Reconstitutor\Context\ManagerContextRegistry;
+use Rekalogika\Reconstitutor\Tests\Entity\Post;
 use Rekalogika\Reconstitutor\Tests\EventRecorder\EventRecorder;
 use Rekalogika\Reconstitutor\Tests\EventRecorder\EventType;
 use Rekalogika\Reconstitutor\Tests\Reconstitutor\DoctrinePostReconstitutor;
@@ -28,6 +30,10 @@ use Symfony\Component\HttpKernel\DependencyInjection\ServicesResetter;
 abstract class DoctrineTestCase extends KernelTestCase
 {
     protected EntityManagerInterface $entityManager;
+    /**
+     * @var EntityRepository<Post>
+     */
+    protected EntityRepository $repository;
     protected ManagerContextRegistry $registry;
     protected DoctrinePostReconstitutor $reconstitutor;
     protected ServicesResetter $resetter;
@@ -43,6 +49,7 @@ abstract class DoctrineTestCase extends KernelTestCase
         $this->assertInstanceOf(EntityManagerInterface::class, $entityManager);
         $this->entityManager = $entityManager;
         $this->unitOfWork = $this->entityManager->getUnitOfWork();
+        $this->repository = $this->entityManager->getRepository(Post::class);
 
         $registry = static::getContainer()->get('rekalogika.reconstitutor.manager_context_registry');
         $this->assertInstanceOf(ManagerContextRegistry::class, $registry);
@@ -148,5 +155,27 @@ abstract class DoctrineTestCase extends KernelTestCase
     protected function assertPostImageNotExists(string $objectId): void
     {
         $this->assertFalse($this->reconstitutor->isImageExists($objectId), 'Image should not exist');
+    }
+
+    protected function createPostWithImage(): Post
+    {
+        $post = new Post('title');
+        $post->setImage('someImage');
+
+        return $post;
+    }
+
+    protected function createPostWithoutImage(): Post
+    {
+        return new Post('title');
+    }
+
+    protected function loadPostWithImage(): Post
+    {
+        $post = $this->createPostWithImage();
+        $this->entityManager->persist($post);
+        $this->entityManager->flush();
+
+        return $post;
     }
 }

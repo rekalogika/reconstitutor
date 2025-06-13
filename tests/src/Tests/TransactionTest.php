@@ -13,159 +13,219 @@ declare(strict_types=1);
 
 namespace Rekalogika\Reconstitutor\Tests\Tests;
 
-use Rekalogika\Reconstitutor\Tests\Entity\Post;
-
-final class TransactionTest extends DoctrineTestCase
+final class TransactionTest extends EntityTestCase
 {
-    private function createPostWithImage(): Post
-    {
-        $post = new Post('title');
-        $post->setImage('someImage');
-
-        return $post;
-    }
-
-    // private function createPostWithoutImage(): Post
-    // {
-    //     return new Post('title');
-    // }
-
-    private function loadPostWithImage(): Post
-    {
-        $post = new Post('title');
-        $post->setImage('someImage');
-        $this->entityManager->persist($post);
-        $this->entityManager->flush();
-
-        return $post;
-    }
-
     public function testPersistBeginFlushRollback(): void
     {
-        $post = $this->createPostWithImage();
-        $id = $post->getId();
-        $this->entityManager->persist($post);
-        $this->entityManager->beginTransaction();
-        $this->entityManager->flush();
-        $this->entityManager->rollback();
-        $this->assertPostImageNotExists($id);
+        $this->instantiate();
+        $this->persist();
+        $this->begin();
+        $this->flush();
+        $this->rollback();
+
+        $this->assertImageNotPresent();
+
+        $this->assertEvents([
+            'onCreate',
+        ]);
     }
 
     public function testBeginPersistFlushRollback(): void
     {
-        $post = $this->createPostWithImage();
-        $id = $post->getId();
-        $this->entityManager->beginTransaction();
-        $this->entityManager->persist($post);
-        $this->entityManager->flush();
-        $this->entityManager->rollback();
-        $this->assertPostImageNotExists($id);
+        $this->instantiate();
+        $this->begin();
+        $this->persist();
+        $this->flush();
+        $this->rollback();
+
+        $this->assertImageNotPresent();
+
+        $this->assertEvents([
+            'onCreate',
+        ]);
     }
 
     public function testPersistBeginFlushCommit(): void
     {
-        $post = $this->createPostWithImage();
-        $id = $post->getId();
-        $this->entityManager->persist($post);
-        $this->entityManager->beginTransaction();
-        $this->entityManager->flush();
-        $this->entityManager->commit();
-        $this->assertPostImageExists($id);
+        $this->instantiate();
+        $this->persist();
+        $this->begin();
+        $this->flush();
+        $this->commit();
+
+        $this->assertImagePresent();
+
+        $this->assertEvents([
+            'onCreate',
+            'onSave',
+        ]);
     }
 
     public function testBeginPersistFlushCommit(): void
     {
-        $post = $this->createPostWithImage();
-        $id = $post->getId();
-        $this->entityManager->beginTransaction();
-        $this->entityManager->persist($post);
-        $this->entityManager->flush();
-        $this->entityManager->commit();
-        $this->assertPostImageExists($id);
+        $this->instantiate();
+        $this->begin();
+        $this->persist();
+        $this->flush();
+        $this->commit();
+
+        $this->assertImagePresent();
+
+        $this->assertEvents([
+            'onCreate',
+            'onSave',
+        ]);
     }
 
     public function testLoadRemoveBeginFlushCommit(): void
     {
-        $post = $this->loadPostWithImage();
-        $id = $post->getId();
-        $this->entityManager->beginTransaction();
-        $this->entityManager->remove($post);
-        $this->entityManager->flush();
-        $this->entityManager->commit();
-        $this->assertPostImageNotExists($id);
+        $this->init();
+
+        $this->load();
+        $this->remove();
+        $this->begin();
+        $this->flush();
+        $this->commit();
+
+        $this->assertImageNotPresent();
+
+        $this->assertEvents([
+            'onLoad',
+            'onRemove',
+        ]);
     }
 
     public function testLoadRemoveBeginFlushRollback(): void
     {
-        $post = $this->loadPostWithImage();
-        $id = $post->getId();
-        $this->entityManager->beginTransaction();
-        $this->entityManager->remove($post);
-        $this->entityManager->flush();
-        $this->entityManager->rollback();
-        $this->assertPostImageExists($id);
+        $this->init();
+
+        $this->load();
+        $this->remove();
+        $this->begin();
+        $this->flush();
+        $this->rollback();
+
+        $this->assertImagePresent();
+
+        $this->assertEvents([
+            'onLoad',
+        ]);
     }
 
     public function testLoadRemoveBeginFlushClearCommit(): void
     {
-        $post = $this->loadPostWithImage();
-        $id = $post->getId();
-        $this->entityManager->beginTransaction();
-        $this->entityManager->remove($post);
-        $this->entityManager->flush();
-        $this->entityManager->clear();
-        $this->entityManager->commit();
-        $this->assertPostImageNotExists($id);
+        $this->init();
+
+        $this->load();
+        $this->remove();
+        $this->begin();
+        $this->flush();
+        $this->clear();
+        $this->commit();
+
+        $this->assertImageNotPresent();
+
+        $this->assertEvents([
+            'onLoad',
+            'onRemove',
+        ]);
     }
 
     public function testLoadRemoveBeginFlushClearRollback(): void
     {
-        $post = $this->loadPostWithImage();
-        $id = $post->getId();
-        $this->entityManager->beginTransaction();
-        $this->entityManager->remove($post);
-        $this->entityManager->flush();
-        $this->entityManager->clear();
-        $this->entityManager->rollback();
-        $this->assertPostImageExists($id);
+        $this->init();
+
+        $this->load();
+        $this->remove();
+        $this->begin();
+        $this->flush();
+        $this->clear();
+        $this->rollback();
+
+        $this->assertImagePresent();
+
+        $this->assertEvents([
+            'onLoad',
+        ]);
     }
 
     public function testLoadRemoveBeginBeginFlushCommitCommit(): void
     {
-        $post = $this->loadPostWithImage();
-        $id = $post->getId();
-        $this->entityManager->remove($post);
-        $this->entityManager->beginTransaction();
-        $this->entityManager->beginTransaction();
-        $this->entityManager->flush();
-        $this->entityManager->commit();
-        $this->entityManager->commit();
-        $this->assertPostImageNotExists($id);
+        $this->init();
+
+        $this->load();
+        $this->remove();
+        $this->begin();
+        $this->begin();
+        $this->flush();
+        $this->commit();
+        $this->commit();
+
+        $this->assertImageNotPresent();
+
+        $this->assertEvents([
+            'onLoad',
+            'onRemove',
+        ]);
     }
 
     public function testLoadRemoveBeginBeginFlushCommitRollback(): void
     {
-        $post = $this->loadPostWithImage();
-        $id = $post->getId();
-        $this->entityManager->remove($post);
-        $this->entityManager->beginTransaction();
-        $this->entityManager->beginTransaction();
-        $this->entityManager->flush();
-        $this->entityManager->commit();
-        $this->entityManager->rollback();
-        $this->assertPostImageExists($id);
+        $this->init();
+
+        $this->load();
+        $this->remove();
+        $this->begin();
+        $this->begin();
+        $this->flush();
+        $this->commit();
+        $this->rollback();
+
+        $this->assertImagePresent();
+
+        $this->assertEvents([
+            'onLoad',
+        ]);
     }
 
     public function testLoadRemoveBeginBeginFlushRollbackCommit(): void
     {
-        $post = $this->loadPostWithImage();
-        $id = $post->getId();
-        $this->entityManager->remove($post);
-        $this->entityManager->beginTransaction();
-        $this->entityManager->beginTransaction();
-        $this->entityManager->flush();
-        $this->entityManager->rollback();
-        $this->entityManager->commit();
-        $this->assertPostImageExists($id);
+        $this->init();
+
+        $this->load();
+        $this->remove();
+        $this->begin();
+        $this->begin();
+        $this->flush();
+        $this->rollback();
+        $this->commit();
+
+        $this->assertImagePresent();
+
+        $this->assertEvents([
+            'onLoad',
+        ]);
+    }
+
+    /**
+     * Caveat: doctrine does not call prePersist in this case
+     */
+    public function testLoadRemovePersistBeginFlushCommit(): void
+    {
+        $this->init();
+
+        $this->load();
+        $this->remove();
+        $this->persist();
+        $this->begin();
+        $this->flush();
+        $this->commit();
+
+        $this->assertImagePresent();
+
+        $this->assertEvents([
+            'onLoad',
+            'onSave',
+        ]);
     }
 }

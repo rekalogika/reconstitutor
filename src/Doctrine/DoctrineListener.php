@@ -54,15 +54,25 @@ final readonly class DoctrineListener
     public function preFlush(PreFlushEventArgs $args): void
     {
         $objectManager = $args->getObjectManager();
-        $this->registry->get($objectManager)->setInFlush(true);
+        $context = $this->registry->get($objectManager);
+
+        // indicates that we are in the middle of a flush operation.
+        $context->setInFlush(true);
+
+        // we take the opportunity to reconcile our list of objects for removal
+        // with unit of work
+        $context->reconcileObjectsForRemoval($objectManager);
     }
 
     public function postFlush(PostFlushEventArgs $args): void
     {
         $objectManager = $args->getObjectManager();
         $context = $this->registry->get($objectManager);
+
+        // indicates that we are done with the flush operation.
         $context->setInFlush(false);
 
+        // if the flush was a lone flush, we call finish here
         if ($context->isInTransaction()) {
             return;
         }
