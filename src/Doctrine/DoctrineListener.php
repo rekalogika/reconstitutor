@@ -70,9 +70,13 @@ final readonly class DoctrineListener
         $context = $this->registry->get($objectManager);
 
         // indicates that we are done with the flush operation.
+
         $context->setInFlush(false);
 
-        // if the flush was a lone flush, we call finish here
+        // if flush was called in a transaction, we store the flushed objects
+        // here, so that we can call `onSave` later, after the transaction
+        // is committed, or discard them if the transaction is rolled back.
+
         if ($context->isInTransaction()) {
             $unitOfWork = $objectManager->getUnitOfWork();
 
@@ -84,6 +88,8 @@ final readonly class DoctrineListener
 
             return;
         }
+
+        // if the flush was a lone flush, we call finish here
 
         $this->finish($objectManager);
     }
@@ -97,8 +103,7 @@ final readonly class DoctrineListener
         $unitOfWork = $objectManager->getUnitOfWork();
         $context = $this->registry->get($objectManager);
 
-        // objects that are in unit of work: call onSave and remove from the
-        //
+        // objects that are in the unit of work
 
         foreach ($unitOfWork->getIdentityMap() as $objects) {
             foreach ($objects as $object) {
@@ -122,7 +127,8 @@ final readonly class DoctrineListener
             }
         }
 
-        // flushed and detached object that we haven't call `onSave` yet
+        // objects that are flushed and detached that we haven't call `onSave`
+        // yet
 
         $objects = $context->popFlushedObjects();
 
@@ -130,7 +136,7 @@ final readonly class DoctrineListener
             $this->processor->onSave($object);
         }
 
-        // removal
+        // objects that are removed
 
         $objectsToRemove = $context->popObjectsForRemoval();
 
@@ -138,7 +144,8 @@ final readonly class DoctrineListener
             $this->processor->onRemove($object);
         }
 
-        // missing objects are the object that was previously `detach()`ed
+        // objects that we know about but are not in the unit of work. the
+        // caller detached them, but we only know about them now.
 
         $missingObjects = $context->reconcile($objectManager);
 

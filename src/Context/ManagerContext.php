@@ -160,8 +160,6 @@ final class ManagerContext implements \Countable
 
             $this->objects->moveObjectsTo($this->transactionScope->objects);
             $this->removedObjects->moveObjectsTo($this->transactionScope->removedObjects);
-            $this->clearedObjects->moveObjectsTo($this->transactionScope->clearedObjects);
-            $this->flushedObjects->moveObjectsTo($this->transactionScope->flushedObjects);
         } else {
             $this->transactionScope->beginTransaction();
         }
@@ -185,21 +183,10 @@ final class ManagerContext implements \Countable
             $transactionScope = $this->transactionScope;
             $this->transactionScope = null;
 
-            foreach ($transactionScope->objects as $object) {
-                $this->add($object);
-            }
-
-            foreach ($transactionScope->removedObjects as $object) {
-                $this->addForRemoval($object);
-            }
-
-            foreach ($transactionScope->clearedObjects as $object) {
-                $this->addForClearance($object);
-            }
-
-            foreach ($transactionScope->flushedObjects as $object) {
-                $this->addFlushedObject($object);
-            }
+            $transactionScope->objects->moveObjectsTo($this->objects);
+            $transactionScope->removedObjects->moveObjectsTo($this->removedObjects);
+            $transactionScope->clearedObjects->moveObjectsTo($this->clearedObjects);
+            $transactionScope->flushedObjects->moveObjectsTo($this->flushedObjects);
         }
 
         return true;

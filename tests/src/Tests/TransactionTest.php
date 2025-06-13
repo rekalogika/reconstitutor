@@ -307,4 +307,128 @@ final class TransactionTest extends EntityTestCase
             'onSave',
         ]);
     }
+
+    public function testLoadBeginRemoveFlushCommit(): void
+    {
+        $this->init();
+
+        $this->load();
+        $this->begin();
+        $this->remove();
+        $this->flush();
+        $this->commit();
+
+        $this->assertImageNotPresent();
+
+        $this->assertEvents([
+            'onLoad',
+            'onRemove',
+        ]);
+    }
+
+    public function testLoadBeginBeginRemoveFlushCommitCommit(): void
+    {
+        $this->init();
+
+        $this->load();
+        $this->begin();
+        $this->begin();
+        $this->remove();
+        $this->flush();
+        $this->commit();
+        $this->commit();
+
+        $this->assertImageNotPresent();
+
+        $this->assertEvents([
+            'onLoad',
+            'onRemove',
+        ]);
+    }
+
+    /**
+     * Missing one commit
+     */
+    public function testLoadBeginBeginBeginRemoveFlushCommitCommit(): void
+    {
+        $this->init();
+
+        $this->load();
+        $this->begin();
+        $this->begin();
+        $this->begin();
+        $this->remove();
+        $this->flush();
+        $this->commit();
+        $this->commit();
+
+        $this->assertImagePresent();
+
+        $this->assertEvents([
+            'onLoad',
+        ]);
+    }
+
+    public function testLoadBeginBeginCommitRemoveFlushCommit(): void
+    {
+        $this->init();
+
+        $this->load();
+        $this->begin();
+        $this->begin();
+        $this->commit();
+        $this->remove();
+        $this->flush();
+        $this->commit();
+
+        $this->assertImageNotPresent();
+
+        $this->assertEvents([
+            'onLoad',
+            'onSave',
+            'onRemove',
+        ]);
+    }
+
+    public function testLoadBeginBeginCommitDetachFlushCommit(): void
+    {
+        $this->init();
+
+        $this->load();
+        $this->begin();
+        $this->begin();
+        $this->commit();
+        $this->detach();
+        $this->flush();
+        $this->commit();
+
+        $this->assertImagePresent();
+
+        $this->assertEvents([
+            'onLoad',
+            'onSave',
+            'onClear',
+        ]);
+    }
+
+    public function testLoadBeginBeginCommitClearFlushCommit(): void
+    {
+        $this->init();
+
+        $this->load();
+        $this->begin();
+        $this->begin();
+        $this->commit();
+        $this->clear();
+        $this->flush();
+        $this->commit();
+
+        $this->assertImagePresent();
+
+        $this->assertEvents([
+            'onLoad',
+            'onSave',
+            'onClear',
+        ]);
+    }
 }
