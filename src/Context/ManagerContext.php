@@ -23,8 +23,26 @@ use Rekalogika\Reconstitutor\Exception\LogicException;
 final class ManagerContext implements \Countable
 {
     private Set $objects;
-    private Set $objectsToRemove;
-    private Set $objectsToClear;
+
+    /**
+     * Objects that are scheduled for removal when flush() or commit() is
+     * called.
+     */
+    private Set $removedObjects;
+
+    /**
+     * Objects that were cleared during a transaction, so we haven't called
+     * `onClear` yet, because we don't know if the transaction will be
+     * committed or rolled back.
+     */
+    private Set $clearedObjects;
+
+    /**
+     * Objects that are flushed inside a transaction, but we haven't called
+     * `onSave` yet, because we don't know if the transaction will be committed
+     * or rolled back.
+     */
+    private Set $flushedObjects;
 
     private ?self $transactionScope = null;
     private bool $inFlush = false;
@@ -43,10 +61,16 @@ final class ManagerContext implements \Countable
     private function init(): void
     {
         $this->objects = new Set();
-        $this->objectsToRemove = new Set();
-        $this->objectsToClear = new Set();
+        $this->removedObjects = new Set();
+        $this->clearedObjects = new Set();
+        $this->flushedObjects = new Set();
         $this->transactionScope = null;
         $this->inFlush = false;
+    }
+
+    public function clear(): void
+    {
+        $this->init();
     }
 
     //
@@ -64,7 +88,7 @@ final class ManagerContext implements \Countable
         }
 
         $this->objects->add($object);
-        $this->objectsToRemove->remove($object);
+        $this->removedObjects->remove($object);
     }
 
     public function remove(object $object): void
@@ -78,7 +102,7 @@ final class ManagerContext implements \Countable
         }
 
         $this->objects->remove($object);
-        $this->objectsToRemove->remove($object);
+        $this->removedObjects->remove($object);
     }
 
     /**
@@ -135,8 +159,9 @@ final class ManagerContext implements \Countable
             $this->transactionScope = new self();
 
             $this->objects->moveObjectsTo($this->transactionScope->objects);
-            $this->objectsToRemove->moveObjectsTo($this->transactionScope->objectsToRemove);
-            $this->objectsToClear->moveObjectsTo($this->transactionScope->objectsToClear);
+            $this->removedObjects->moveObjectsTo($this->transactionScope->removedObjects);
+            $this->clearedObjects->moveObjectsTo($this->transactionScope->clearedObjects);
+            $this->flushedObjects->moveObjectsTo($this->transactionScope->flushedObjects);
         } else {
             $this->transactionScope->beginTransaction();
         }
@@ -164,12 +189,16 @@ final class ManagerContext implements \Countable
                 $this->add($object);
             }
 
-            foreach ($transactionScope->objectsToRemove as $object) {
+            foreach ($transactionScope->removedObjects as $object) {
                 $this->addForRemoval($object);
             }
 
-            foreach ($transactionScope->objectsToClear as $object) {
+            foreach ($transactionScope->clearedObjects as $object) {
                 $this->addForClearance($object);
+            }
+
+            foreach ($transactionScope->flushedObjects as $object) {
+                $this->addFlushedObject($object);
             }
         }
 
@@ -243,7 +272,7 @@ final class ManagerContext implements \Countable
             return $this->transactionScope->getObjectsForRemoval();
         }
 
-        return $this->objectsToRemove;
+        return $this->removedObjects;
     }
 
     public function addForRemoval(object $object): void
@@ -257,7 +286,7 @@ final class ManagerContext implements \Countable
         }
 
         $this->objects->remove($object);
-        $this->objectsToRemove->add($object);
+        $this->removedObjects->add($object);
     }
 
     public function removeForRemoval(object $object): void
@@ -270,7 +299,7 @@ final class ManagerContext implements \Countable
             return;
         }
 
-        $this->objectsToRemove->remove($object);
+        $this->removedObjects->remove($object);
         $this->objects->add($object);
     }
 
@@ -304,9 +333,9 @@ final class ManagerContext implements \Countable
     {
         $objects = [];
 
-        foreach ($this->objectsToRemove as $object) {
+        foreach ($this->removedObjects as $object) {
             $objects[] = $object;
-            $this->objectsToRemove->remove($object);
+            $this->removedObjects->remove($object);
         }
 
         return $objects;
@@ -315,11 +344,6 @@ final class ManagerContext implements \Countable
     //
     // clearance
     //
-
-    public function clear(): void
-    {
-        $this->init();
-    }
 
     /**
      * @return iterable<object>
@@ -332,7 +356,7 @@ final class ManagerContext implements \Countable
             return [];
         }
 
-        return $this->objectsToClear;
+        return $this->clearedObjects;
     }
 
     public function addForClearance(object $object): void
@@ -345,7 +369,7 @@ final class ManagerContext implements \Countable
             return;
         }
 
-        $this->objectsToClear->add($object);
+        $this->clearedObjects->add($object);
     }
 
     /**
@@ -355,16 +379,56 @@ final class ManagerContext implements \Countable
     {
         $objects = [];
 
-        foreach ($this->objectsToClear as $object) {
+        foreach ($this->clearedObjects as $object) {
             $objects[] = $object;
-            $this->objectsToClear->remove($object);
+            $this->clearedObjects->remove($object);
         }
 
         return $objects;
     }
 
-    public function isPendingForClearance(object $object): bool
+    //
+    // flushed objects
+    //
+
+    public function addFlushedObject(object $object): void
     {
-        return $this->objectsToClear->contains($object);
+        if ($this->transactionScope !== null) {
+            // if we are in a transaction scope, we add the object to the
+            // transaction scope instead of the current scope
+
+            $this->transactionScope->addFlushedObject($object);
+            return;
+        }
+
+        $this->flushedObjects->add($object);
+    }
+
+    public function removeFlushedObject(object $object): void
+    {
+        if ($this->transactionScope !== null) {
+            // if we are in a transaction scope, we remove the object from the
+            // transaction scope instead of the current scope
+
+            $this->transactionScope->removeFlushedObject($object);
+            return;
+        }
+
+        $this->flushedObjects->remove($object);
+    }
+
+    /**
+     * @return list<object>
+     */
+    public function popFlushedObjects(): array
+    {
+        $objects = [];
+
+        foreach ($this->flushedObjects as $object) {
+            $objects[] = $object;
+            $this->flushedObjects->remove($object);
+        }
+
+        return $objects;
     }
 }
