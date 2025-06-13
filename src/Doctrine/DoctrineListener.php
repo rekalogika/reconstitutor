@@ -74,6 +74,14 @@ final readonly class DoctrineListener
 
         // if the flush was a lone flush, we call finish here
         if ($context->isInTransaction()) {
+            $unitOfWork = $objectManager->getUnitOfWork();
+
+            foreach ($unitOfWork->getIdentityMap() as $objects) {
+                foreach ($objects as $object) {
+                    $context->addFlushedObject($object);
+                }
+            }
+
             return;
         }
 
@@ -89,7 +97,8 @@ final readonly class DoctrineListener
         $unitOfWork = $objectManager->getUnitOfWork();
         $context = $this->registry->get($objectManager);
 
-        // save
+        // objects that are in unit of work: call onSave and remove from the
+        //
 
         foreach ($unitOfWork->getIdentityMap() as $objects) {
             foreach ($objects as $object) {
@@ -109,28 +118,16 @@ final readonly class DoctrineListener
 
                 // call onSave
                 $this->processor->onSave($object);
+                $context->removeFlushedObject($object);
             }
         }
 
-        // save objects pending clearance, these are the objects that was
-        // flushed then cleared inside a transaction.
+        // flushed and detached object that we haven't call `onSave` yet
 
-        foreach ($context->popObjectsForClearance() as $object) {
-            // do not call onSave if the object is an uninitialized proxy.
-            // should never happen, but we check anyway as a safeguard.
+        $objects = $context->popFlushedObjects();
 
-            if ($this->isUninitializedProxy($object)) {
-                continue;
-            }
-
-            // call onSave
+        foreach ($objects as $object) {
             $this->processor->onSave($object);
-
-            // call onClear
-            $this->processor->onClear($object);
-
-            // remove from context
-            $context->remove($object);
         }
 
         // removal

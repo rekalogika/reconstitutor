@@ -172,6 +172,62 @@ final class TransactionTest extends EntityTestCase
         ]);
     }
 
+    public function testLoadRemoveBeginFlushDetachCommit(): void
+    {
+        $this->init();
+
+        $this->load();
+        $this->remove();
+        $this->begin();
+        $this->flush();
+        $this->detach();
+        $this->commit();
+
+        $this->assertImageNotPresent();
+
+        $this->assertEvents([
+            'onLoad',
+            'onRemove',
+        ]);
+    }
+
+    public function testLoadBeginFlushDetachCommit(): void
+    {
+        $this->init();
+
+        $this->load();
+        $this->begin();
+        $this->flush();
+        $this->detach();
+        $this->commit();
+
+        $this->assertImagePresent();
+
+        $this->assertEvents([
+            'onLoad',
+            'onSave',
+            'onClear',
+        ]);
+    }
+
+    public function testLoadRemoveBeginFlushDetachRollback(): void
+    {
+        $this->init();
+
+        $this->load();
+        $this->remove();
+        $this->begin();
+        $this->flush();
+        $this->detach();
+        $this->rollback();
+
+        $this->assertImagePresent();
+
+        $this->assertEvents([
+            'onLoad',
+        ]);
+    }
+
     public function testLoadRemoveBeginBeginFlushCommitCommit(): void
     {
         $this->init();

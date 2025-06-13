@@ -44,6 +44,20 @@ final class DoctrineTest extends EntityTestCase
         ]);
     }
 
+    public function testLoadFlush(): void
+    {
+        $this->init();
+
+        $this->load();
+        $this->flush();
+
+        $this->assertImagePresent();
+        $this->assertEvents([
+            'onLoad',
+            'onSave',
+        ]);
+    }
+
     public function testLoadRemoveFlush(): void
     {
         $this->init();
@@ -56,6 +70,21 @@ final class DoctrineTest extends EntityTestCase
         $this->assertEvents([
             'onLoad',
             'onRemove',
+        ]);
+    }
+
+    public function testPersistRemoveFlush(): void
+    {
+        $this->instantiate();
+
+        $this->persist();
+        $this->remove();
+        $this->flush();
+
+        $this->assertImageNotPresent();
+        $this->assertEvents([
+            'onCreate',
+            'onClear',
         ]);
     }
 
@@ -235,6 +264,7 @@ final class DoctrineTest extends EntityTestCase
 
         $this->reference();
         $this->detach();
+        $this->flush();
 
         $this->assertIsProxy();
         $this->assertImagePresent();
