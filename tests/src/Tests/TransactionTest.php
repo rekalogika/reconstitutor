@@ -135,6 +135,25 @@ final class TransactionTest extends EntityTestCase
         ]);
     }
 
+    public function testLoadBeginFlushClearCommit(): void
+    {
+        $this->init();
+
+        $this->load();
+        $this->begin();
+        $this->flush();
+        $this->clear();
+        $this->commit();
+
+        $this->assertImagePresent();
+
+        $this->assertEvents([
+            'onLoad',
+            'onSave',
+            'onClear',
+        ]);
+    }
+
     public function testLoadRemoveBeginFlushClearRollback(): void
     {
         $this->init();

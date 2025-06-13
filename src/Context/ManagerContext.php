@@ -19,14 +19,12 @@ use Rekalogika\Reconstitutor\Exception\LogicException;
 
 /**
  * Tracks the objects managed by an object manager.
- *
- * @implements \IteratorAggregate<int,object>
  */
-final class ManagerContext implements \Countable, \IteratorAggregate
+final class ManagerContext implements \Countable
 {
     private Set $objects;
     private Set $objectsToRemove;
-    private Set $objectsInUnitOfWork;
+    private Set $objectsToClear;
 
     private ?self $transactionScope = null;
     private bool $inFlush = false;
@@ -34,14 +32,6 @@ final class ManagerContext implements \Countable, \IteratorAggregate
     public function __construct()
     {
         $this->init();
-    }
-
-    #[\Override]
-    public function getIterator(): \Traversable
-    {
-        foreach ($this->objects as $object) {
-            yield $object;
-        }
     }
 
     #[\Override]
@@ -54,7 +44,7 @@ final class ManagerContext implements \Countable, \IteratorAggregate
     {
         $this->objects = new Set();
         $this->objectsToRemove = new Set();
-        $this->objectsInUnitOfWork = new Set();
+        $this->objectsToClear = new Set();
         $this->transactionScope = null;
         $this->inFlush = false;
     }
@@ -62,15 +52,6 @@ final class ManagerContext implements \Countable, \IteratorAggregate
     //
     // operation
     //
-
-    public function clear(): void
-    {
-        // clear only on top level scope
-
-        if ($this->transactionScope === null) {
-            $this->init();
-        }
-    }
 
     public function add(object $object): void
     {
@@ -84,6 +65,35 @@ final class ManagerContext implements \Countable, \IteratorAggregate
 
         $this->objects->add($object);
         $this->objectsToRemove->remove($object);
+    }
+
+    public function remove(object $object): void
+    {
+        if ($this->transactionScope !== null) {
+            // if we are in a transaction scope, we remove the object from the
+            // transaction scope instead of the current scope
+
+            $this->transactionScope->remove($object);
+            return;
+        }
+
+        $this->objects->remove($object);
+        $this->objectsToRemove->remove($object);
+    }
+
+    /**
+     * @return \Traversable<object>
+     */
+    public function getObjects(): \Traversable
+    {
+        if ($this->transactionScope !== null) {
+            // if we are in a transaction scope, we return the objects from the
+            // transaction scope instead of the current scope
+
+            return $this->transactionScope->getObjects();
+        }
+
+        return $this->objects;
     }
 
     public function contains(object $object): bool
@@ -126,6 +136,7 @@ final class ManagerContext implements \Countable, \IteratorAggregate
 
             $this->objects->moveObjectsTo($this->transactionScope->objects);
             $this->objectsToRemove->moveObjectsTo($this->transactionScope->objectsToRemove);
+            $this->objectsToClear->moveObjectsTo($this->transactionScope->objectsToClear);
         } else {
             $this->transactionScope->beginTransaction();
         }
@@ -155,6 +166,10 @@ final class ManagerContext implements \Countable, \IteratorAggregate
 
             foreach ($transactionScope->objectsToRemove as $object) {
                 $this->addForRemoval($object);
+            }
+
+            foreach ($transactionScope->objectsToClear as $object) {
+                $this->addForClearance($object);
             }
         }
 
@@ -186,33 +201,26 @@ final class ManagerContext implements \Countable, \IteratorAggregate
     //
 
     /**
-     * Records objects that are in doctrine's unit of work that is not an
-     * uninitialized proxy
-     *
-     * @param object $object
-     */
-    public function addForReconciliation(object $object): void
-    {
-        $this->objectsInUnitOfWork->add($object);
-    }
-
-    /**
      * Returns objects that are in reconstitutor's repository but not in
      * Doctrine's unit of work. And removes them from the repository.
      *
      * @return list<object>
      */
-    public function reconcile(): array
+    public function reconcile(ObjectManager $objectManager): array
     {
+        if (!$objectManager instanceof EntityManagerInterface) {
+            throw new LogicException('Reconstitutor currently only works with EntityManagerInterface.');
+        }
+
+        $unitOfWork = $objectManager->getUnitOfWork();
         $missingObjects = [];
 
         foreach ($this->objects as $object) {
-            if ($this->objectsInUnitOfWork->contains($object)) {
+            if ($unitOfWork->isInIdentityMap($object)) {
                 continue;
             }
 
-            // @todo should direct remove
-            $this->addForRemoval($object);
+            $this->remove($object);
             $missingObjects[] = $object;
         }
 
@@ -302,5 +310,61 @@ final class ManagerContext implements \Countable, \IteratorAggregate
         }
 
         return $objects;
+    }
+
+    //
+    // clearance
+    //
+
+    public function clear(): void
+    {
+        $this->init();
+    }
+
+    /**
+     * @return iterable<object>
+     */
+    public function getObjectsForClearance(): iterable
+    {
+        if ($this->transactionScope !== null) {
+            // if we are in a transaction scope, nothing is cleared yet
+
+            return [];
+        }
+
+        return $this->objectsToClear;
+    }
+
+    public function addForClearance(object $object): void
+    {
+        if ($this->transactionScope !== null) {
+            // if we are in a transaction scope, we remove the object from the
+            // transaction scope instead of the current scope
+
+            $this->transactionScope->addForClearance($object);
+            return;
+        }
+
+        $this->objectsToClear->add($object);
+    }
+
+    /**
+     * @return list<object>
+     */
+    public function popObjectsForClearance(): array
+    {
+        $objects = [];
+
+        foreach ($this->objectsToClear as $object) {
+            $objects[] = $object;
+            $this->objectsToClear->remove($object);
+        }
+
+        return $objects;
+    }
+
+    public function isPendingForClearance(object $object): bool
+    {
+        return $this->objectsToClear->contains($object);
     }
 }

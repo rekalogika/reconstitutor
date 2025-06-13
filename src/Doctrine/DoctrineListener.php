@@ -87,6 +87,7 @@ final readonly class DoctrineListener
         }
 
         $unitOfWork = $objectManager->getUnitOfWork();
+        $context = $this->registry->get($objectManager);
 
         // save
 
@@ -95,7 +96,7 @@ final readonly class DoctrineListener
                 // do not call onSave if we don't know anything about the object,
                 // i.e. it is an uninitialized proxy
 
-                if (!$this->registry->get($objectManager)->contains($object)) {
+                if (!$context->contains($object)) {
                     continue;
                 }
 
@@ -106,19 +107,35 @@ final readonly class DoctrineListener
                     continue;
                 }
 
-                // reconcile objects
-                $this->registry->get($objectManager)->addForReconciliation($object);
-
                 // call onSave
                 $this->processor->onSave($object);
             }
         }
 
+        // save objects pending clearance, these are the objects that was
+        // flushed then cleared inside a transaction.
+
+        foreach ($context->popObjectsForClearance() as $object) {
+            // do not call onSave if the object is an uninitialized proxy.
+            // should never happen, but we check anyway as a safeguard.
+
+            if ($this->isUninitializedProxy($object)) {
+                continue;
+            }
+
+            // call onSave
+            $this->processor->onSave($object);
+
+            // call onClear
+            $this->processor->onClear($object);
+
+            // remove from context
+            $context->remove($object);
+        }
+
         // removal
 
-        $objectsToRemove = $this->registry
-            ->get($objectManager)
-            ->popObjectsForRemoval();
+        $objectsToRemove = $context->popObjectsForRemoval();
 
         foreach ($objectsToRemove as $object) {
             $this->processor->onRemove($object);
@@ -126,9 +143,7 @@ final readonly class DoctrineListener
 
         // missing objects are the object that was previously `detach()`ed
 
-        $missingObjects = $this->registry
-            ->get($objectManager)
-            ->reconcile();
+        $missingObjects = $context->reconcile($objectManager);
 
         foreach ($missingObjects as $object) {
             $this->processor->onClear($object);
@@ -160,12 +175,24 @@ final readonly class DoctrineListener
     public function onClear(OnClearEventArgs $args): void
     {
         $objectManager = $args->getObjectManager();
+        $context = $this->registry->get($objectManager);
 
-        foreach ($this->registry->get($objectManager) as $object) {
+        if ($context->isInTransaction()) {
+            // if in transaction, we will call clear later after outermost
+            // commit or rollback
+
+            foreach ($context->getObjects() as $object) {
+                $context->addForClearance($object);
+            }
+
+            return;
+        }
+
+        foreach ($context->getObjects() as $object) {
             $this->processor->onClear($object);
         }
 
-        $this->registry->get($objectManager)->clear();
+        $context->clear();
     }
 
     public function postBeginTransaction(TransactionEventArgs $args): void
