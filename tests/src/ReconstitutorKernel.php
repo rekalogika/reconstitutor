@@ -13,6 +13,8 @@ declare(strict_types=1);
 
 namespace Rekalogika\Reconstitutor\Tests;
 
+use Composer\InstalledVersions;
+use Composer\Semver\VersionParser;
 use Doctrine\Bundle\DoctrineBundle\DoctrineBundle;
 use Rekalogika\DirectPropertyAccess\RekalogikaDirectPropertyAccessBundle;
 use Rekalogika\Reconstitutor\RekalogikaReconstitutorBundle;
@@ -20,6 +22,7 @@ use Symfony\Bundle\FrameworkBundle\FrameworkBundle;
 use Symfony\Bundle\FrameworkBundle\Kernel\MicroKernelTrait;
 use Symfony\Bundle\MonologBundle\MonologBundle;
 use Symfony\Component\Config\Loader\LoaderInterface;
+use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\HttpKernel\Kernel;
 
 final class ReconstitutorKernel extends Kernel
@@ -51,6 +54,14 @@ final class ReconstitutorKernel extends Kernel
     public function registerContainerConfiguration(LoaderInterface $loader): void
     {
         $this->baseRegisterContainerConfiguration($loader);
+
+        $ormConfig = InstalledVersions::satisfies(new VersionParser(), 'symfony/var-exporter', '<8')
+            ? ['enable_lazy_ghost_objects' => true]
+            : ['enable_native_lazy_objects' => true];
+
+        $loader->load(static function (ContainerBuilder $container) use ($ormConfig): void {
+            $container->loadFromExtension('doctrine', ['orm' => $ormConfig]);
+        });
     }
 
     #[\Override]
