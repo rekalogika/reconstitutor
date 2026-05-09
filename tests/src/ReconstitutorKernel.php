@@ -66,11 +66,26 @@ final class ReconstitutorKernel extends Kernel
         } elseif (InstalledVersions::satisfies($versionParser, 'doctrine/doctrine-bundle', '<3.0')) {
             $ormConfig = ['enable_lazy_ghost_objects' => true];
         } else {
+            $ormConfig = null;
+        }
+
+        $dbalConfig = InstalledVersions::satisfies($versionParser, 'doctrine/doctrine-bundle', '<3.0')
+            ? ['use_savepoints' => true]
+            : null;
+
+        if ($ormConfig === null && $dbalConfig === null) {
             return;
         }
 
-        $loader->load(static function (ContainerBuilder $container) use ($ormConfig): void {
-            $container->loadFromExtension('doctrine', ['orm' => $ormConfig]);
+        $loader->load(static function (ContainerBuilder $container) use ($ormConfig, $dbalConfig): void {
+            $config = [];
+            if ($ormConfig !== null) {
+                $config['orm'] = $ormConfig;
+            }
+            if ($dbalConfig !== null) {
+                $config['dbal'] = $dbalConfig;
+            }
+            $container->loadFromExtension('doctrine', $config);
         });
     }
 
