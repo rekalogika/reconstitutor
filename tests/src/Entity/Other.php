@@ -29,6 +29,16 @@ class Other
     #[ORM\Column(nullable: true)]
     private ?string $name = null;
 
+    public function getName(): ?string
+    {
+        return $this->name;
+    }
+
+    public function setName(?string $name): void
+    {
+        $this->name = $name;
+    }
+
     public function __construct()
     {
         $this->id = Uuid::v6()->toRfc4122();

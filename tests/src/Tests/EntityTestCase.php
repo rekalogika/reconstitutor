@@ -79,7 +79,9 @@ abstract class EntityTestCase extends KernelTestCase
         $connection = $this->entityManager->getConnection();
 
         // DBAL 4.x always uses savepoints; the getter is deprecated but
-        // still returns true. DBAL 3.x: configurable, default false.
+        // still returns true. DBAL 3.x: configurable, default false. DBAL 5
+        // is expected to drop the method entirely.
+        /** @phpstan-ignore function.alreadyNarrowedType */
         if (!method_exists($connection, 'getNestTransactionsWithSavepoints')) {
             return;
         }
