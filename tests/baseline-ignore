@@ -2,3 +2,6 @@
 %Using null as an array offset is deprecated, use an empty string instead%
 %Implicitly marking parameter \$\w+ as nullable is deprecated, the explicit nullable type must be used instead%
 %Constant E_STRICT is deprecated%
+%Method PDO::sqliteCreateFunction\(\) is deprecated since 8\.5, use Pdo\\Sqlite::createFunction\(\) instead%
+%ArrayIterator::__construct\(\): Using an object as a backing array for ArrayIterator is deprecated%
+%Method SplObjectStorage::contains\(\) is deprecated since 8\.5, use method SplObjectStorage::offsetExists\(\) instead%
