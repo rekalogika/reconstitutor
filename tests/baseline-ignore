@@ -1,2 +1,4 @@
 %Method ReflectionProperty::setAccessible\(\) is deprecated since 8\.5%
 %Using null as an array offset is deprecated, use an empty string instead%
+%Implicitly marking parameter \$\w+ as nullable is deprecated, the explicit nullable type must be used instead%
+%Constant E_STRICT is deprecated%
