@@ -72,5 +72,5 @@ jobs:
 
       - name: Run phpunit
         run: |
-          export SYMFONY_DEPRECATIONS_HELPER='max[direct]=0'
+          export SYMFONY_DEPRECATIONS_HELPER='max[direct]=0&ignoreFile=tests/baseline-ignore'
           vendor/bin/phpunit

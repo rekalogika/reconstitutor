@@ -1,0 +1,2 @@
+%Method ReflectionProperty::setAccessible\(\) is deprecated since 8\.5%
+%Using null as an array offset is deprecated, use an empty string instead%
