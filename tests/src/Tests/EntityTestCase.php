@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace Rekalogika\Reconstitutor\Tests\Tests;
 
-use Composer\InstalledVersions;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Mapping\ClassMetadata;
@@ -50,7 +49,7 @@ abstract class EntityTestCase extends KernelTestCase
         $this->unitOfWork = $this->entityManager->getUnitOfWork();
         $this->repository = $this->entityManager->getRepository(Post::class);
 
-        $this->assertSavepointsEnabled();
+        $this->ensureSavepointsEnabled();
 
         /** @var list<ClassMetadata<object>> */
         $allMetadatas = $this->entityManager->getMetadataFactory()->getAllMetadata();
@@ -68,37 +67,28 @@ abstract class EntityTestCase extends KernelTestCase
     }
 
     /**
-     * Diagnostic: nested transactions must use savepoints, otherwise inner
-     * rollback marks the outer transaction rollback-only (DBAL 3.x default)
-     * and our middleware never sees a RELEASE for the inner commit.
+     * Nested transactions must use savepoints, otherwise inner rollback marks
+     * the outer transaction rollback-only (DBAL 3.x default) and our
+     * middleware never sees a RELEASE for the inner commit. The kernel sets
+     * `dbal.use_savepoints: true` for doctrine-bundle 2.x, but on at least
+     * one matrix combo (Symfony 7.0.0 + doctrine-bundle 2.18.0 + DBAL 3.7.0
+     * lowest deps) that config is silently dropped, so force it on here.
      */
-    private function assertSavepointsEnabled(): void
+    private function ensureSavepointsEnabled(): void
     {
         $connection = $this->entityManager->getConnection();
 
+        // DBAL 4.x always uses savepoints; the getter is deprecated but
+        // still returns true. DBAL 3.x: configurable, default false.
         if (!method_exists($connection, 'getNestTransactionsWithSavepoints')) {
             return;
         }
 
-        // DBAL 4.x always uses savepoints; the getter is deprecated but
-        // still returns true. DBAL 3.x: configurable, default false.
         if ($connection->getNestTransactionsWithSavepoints()) {
             return;
         }
 
-        $versions = [
-            'doctrine/dbal' => InstalledVersions::getVersion('doctrine/dbal'),
-            'doctrine/orm' => InstalledVersions::getVersion('doctrine/orm'),
-            'doctrine/doctrine-bundle' => InstalledVersions::getVersion('doctrine/doctrine-bundle'),
-            'symfony/framework-bundle' => InstalledVersions::getVersion('symfony/framework-bundle'),
-        ];
-
-        static::fail(\sprintf(
-            "Nested transactions are not using savepoints. The %s::testLoadRemoveBeginBeginFlushRollbackCommit and similar tests will fail in confusing ways without this.\nPHP %s, installed versions: %s",
-            self::class,
-            \PHP_VERSION,
-            json_encode($versions, JSON_THROW_ON_ERROR),
-        ));
+        $connection->setNestTransactionsWithSavepoints(true);
     }
 
     //
