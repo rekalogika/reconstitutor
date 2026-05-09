@@ -55,9 +55,19 @@ final class ReconstitutorKernel extends Kernel
     {
         $this->baseRegisterContainerConfiguration($loader);
 
-        $ormConfig = InstalledVersions::satisfies(new VersionParser(), 'symfony/var-exporter', '<8')
-            ? ['enable_lazy_ghost_objects' => true]
-            : ['enable_native_lazy_objects' => true];
+        $versionParser = new VersionParser();
+
+        $canUseNative = \PHP_VERSION_ID >= 80400
+            && InstalledVersions::satisfies($versionParser, 'doctrine/orm', '>=3.4')
+            && InstalledVersions::satisfies($versionParser, 'doctrine/doctrine-bundle', '>=2.15');
+
+        if ($canUseNative) {
+            $ormConfig = ['enable_native_lazy_objects' => true];
+        } elseif (InstalledVersions::satisfies($versionParser, 'doctrine/doctrine-bundle', '<3.0')) {
+            $ormConfig = ['enable_lazy_ghost_objects' => true];
+        } else {
+            return;
+        }
 
         $loader->load(static function (ContainerBuilder $container) use ($ormConfig): void {
             $container->loadFromExtension('doctrine', ['orm' => $ormConfig]);
