@@ -3,7 +3,6 @@ doctrine:
         driver: pdo_sqlite
         charset: UTF8
         memory: true
-        use_savepoints: true
 
     orm:
         # auto_generate_proxy_classes: true
