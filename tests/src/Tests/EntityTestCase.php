@@ -84,10 +84,12 @@ abstract class EntityTestCase extends KernelTestCase
             return;
         }
 
+        /** @psalm-suppress DeprecatedMethod */
         if ($connection->getNestTransactionsWithSavepoints()) {
             return;
         }
 
+        /** @psalm-suppress DeprecatedMethod */
         $connection->setNestTransactionsWithSavepoints(true);
     }
 
