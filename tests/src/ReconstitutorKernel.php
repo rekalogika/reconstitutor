@@ -13,6 +13,8 @@ declare(strict_types=1);
 
 namespace Rekalogika\Reconstitutor\Tests;
 
+use Composer\InstalledVersions;
+use Composer\Semver\VersionParser;
 use Doctrine\Bundle\DoctrineBundle\DoctrineBundle;
 use Rekalogika\DirectPropertyAccess\RekalogikaDirectPropertyAccessBundle;
 use Rekalogika\Reconstitutor\RekalogikaReconstitutorBundle;
@@ -20,6 +22,7 @@ use Symfony\Bundle\FrameworkBundle\FrameworkBundle;
 use Symfony\Bundle\FrameworkBundle\Kernel\MicroKernelTrait;
 use Symfony\Bundle\MonologBundle\MonologBundle;
 use Symfony\Component\Config\Loader\LoaderInterface;
+use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\HttpKernel\Kernel;
 
 final class ReconstitutorKernel extends Kernel
@@ -51,6 +54,39 @@ final class ReconstitutorKernel extends Kernel
     public function registerContainerConfiguration(LoaderInterface $loader): void
     {
         $this->baseRegisterContainerConfiguration($loader);
+
+        $versionParser = new VersionParser();
+
+        $canUseNative = \PHP_VERSION_ID >= 80400
+            && InstalledVersions::satisfies($versionParser, 'doctrine/orm', '>=3.4')
+            && InstalledVersions::satisfies($versionParser, 'doctrine/doctrine-bundle', '>=2.15');
+
+        if ($canUseNative) {
+            $ormConfig = ['enable_native_lazy_objects' => true];
+        } elseif (InstalledVersions::satisfies($versionParser, 'doctrine/doctrine-bundle', '<3.0')) {
+            $ormConfig = ['enable_lazy_ghost_objects' => true];
+        } else {
+            $ormConfig = null;
+        }
+
+        $dbalConfig = InstalledVersions::satisfies($versionParser, 'doctrine/doctrine-bundle', '<3.0')
+            ? ['use_savepoints' => true]
+            : null;
+
+        if ($ormConfig === null && $dbalConfig === null) {
+            return;
+        }
+
+        $loader->load(static function (ContainerBuilder $container) use ($ormConfig, $dbalConfig): void {
+            $config = [];
+            if ($ormConfig !== null) {
+                $config['orm'] = $ormConfig;
+            }
+            if ($dbalConfig !== null) {
+                $config['dbal'] = $dbalConfig;
+            }
+            $container->loadFromExtension('doctrine', $config);
+        });
     }
 
     #[\Override]

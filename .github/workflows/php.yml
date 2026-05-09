@@ -7,6 +7,7 @@ on:
     branches: ["main"]
   schedule:
     - cron: "14 4 * * *"
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -16,9 +17,16 @@ jobs:
     strategy:
       matrix:
         operating-system: [ubuntu-latest]
-        php: ["8.2", "8.3", "8.4"]
-        symfony: ["6.*", "7.*"]
+        php: ["8.2", "8.3", "8.4", "8.5"]
+        symfony: ["6.*", "7.*", "8.*"]
         dep: [highest, lowest]
+        exclude:
+          - php: "8.2"
+            symfony: "8.*"
+          - php: "8.3"
+            symfony: "8.*"
+          - php: "8.5"
+            symfony: "6.*"
 
     runs-on: ${{ matrix.operating-system }}
 
@@ -50,7 +58,7 @@ jobs:
         uses: ramsey/composer-install@v3
         with:
           dependency-versions: ${{ matrix.dep }}
-          composer-options: --prefer-dist --no-progress --ignore-platform-reqs
+          composer-options: --prefer-dist --no-progress
         env:
           SYMFONY_REQUIRE: ${{ matrix.symfony }}
 
@@ -64,5 +72,5 @@ jobs:
 
       - name: Run phpunit
         run: |
-          export SYMFONY_DEPRECATIONS_HELPER='max[direct]=0'
+          export SYMFONY_DEPRECATIONS_HELPER='max[direct]=0&ignoreFile=tests/baseline-ignore'
           vendor/bin/phpunit

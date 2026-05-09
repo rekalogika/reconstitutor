@@ -49,6 +49,8 @@ abstract class EntityTestCase extends KernelTestCase
         $this->unitOfWork = $this->entityManager->getUnitOfWork();
         $this->repository = $this->entityManager->getRepository(Post::class);
 
+        $this->ensureSavepointsEnabled();
+
         /** @var list<ClassMetadata<object>> */
         $allMetadatas = $this->entityManager->getMetadataFactory()->getAllMetadata();
 
@@ -62,6 +64,35 @@ abstract class EntityTestCase extends KernelTestCase
 
         $this->assertInstanceOf(DoctrinePostReconstitutor::class, $reconstitutor);
         $this->reconstitutor = $reconstitutor;
+    }
+
+    /**
+     * Nested transactions must use savepoints, otherwise inner rollback marks
+     * the outer transaction rollback-only (DBAL 3.x default) and our
+     * middleware never sees a RELEASE for the inner commit. The kernel sets
+     * `dbal.use_savepoints: true` for doctrine-bundle 2.x, but on at least
+     * one matrix combo (Symfony 7.0.0 + doctrine-bundle 2.18.0 + DBAL 3.7.0
+     * lowest deps) that config is silently dropped, so force it on here.
+     */
+    private function ensureSavepointsEnabled(): void
+    {
+        $connection = $this->entityManager->getConnection();
+
+        // DBAL 4.x always uses savepoints; the getter is deprecated but
+        // still returns true. DBAL 3.x: configurable, default false. DBAL 5
+        // is expected to drop the method entirely.
+        /** @phpstan-ignore function.alreadyNarrowedType */
+        if (!method_exists($connection, 'getNestTransactionsWithSavepoints')) {
+            return;
+        }
+
+        /** @psalm-suppress DeprecatedMethod */
+        if ($connection->getNestTransactionsWithSavepoints()) {
+            return;
+        }
+
+        /** @psalm-suppress DeprecatedMethod */
+        $connection->setNestTransactionsWithSavepoints(true);
     }
 
     //

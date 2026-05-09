@@ -23,6 +23,22 @@ class Other
     #[ORM\Column(unique: true, nullable: false)]
     private string $id;
 
+    // PHP 8.4's newLazyGhost drops the lazy state once every property has a
+    // raw value. With only the identifier, getReference() yields a proxy
+    // that's already "initialized" the moment Doctrine assigns the id.
+    #[ORM\Column(nullable: true)]
+    private ?string $name = null;
+
+    public function getName(): ?string
+    {
+        return $this->name;
+    }
+
+    public function setName(?string $name): void
+    {
+        $this->name = $name;
+    }
+
     public function __construct()
     {
         $this->id = Uuid::v6()->toRfc4122();
