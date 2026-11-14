@@ -25,8 +25,8 @@ final class ManagerContext implements \Countable
     private Set $objects;
 
     /**
-     * Objects that are scheduled for removal when flush() or commit() is
-     * called.
+     * Objects whose removal has been executed, but we haven't called
+     * `onRemove` yet.
      */
     private Set $removedObjects;
 
@@ -247,21 +247,6 @@ final class ManagerContext implements \Countable
     // removal
     //
 
-    /**
-     * @return iterable<object>
-     */
-    public function getObjectsForRemoval(): iterable
-    {
-        if ($this->transactionScope !== null) {
-            // if we are in a transaction scope, we return the objects from the
-            // transaction scope instead of the current scope
-
-            return $this->transactionScope->getObjectsForRemoval();
-        }
-
-        return $this->removedObjects;
-    }
-
     public function addForRemoval(object $object): void
     {
         if ($this->transactionScope !== null) {
@@ -274,43 +259,6 @@ final class ManagerContext implements \Countable
 
         $this->objects->remove($object);
         $this->removedObjects->add($object);
-    }
-
-    public function removeForRemoval(object $object): void
-    {
-        if ($this->transactionScope !== null) {
-            // if we are in a transaction scope, we remove the object from the
-            // transaction scope instead of the current scope
-
-            $this->transactionScope->removeForRemoval($object);
-            return;
-        }
-
-        $this->removedObjects->remove($object);
-        $this->objects->add($object);
-    }
-
-    /**
-     * When the caller does remove() and persist(), Doctrine does not call
-     * prePersist, so we need to objects pending removal if they are not
-     * scheduled
-     */
-    public function reconcileObjectsForRemoval(ObjectManager $objectManager): void
-    {
-        if (!$objectManager instanceof EntityManagerInterface) {
-            throw new LogicException('Reconstitutor currently only works with EntityManagerInterface.');
-        }
-
-        $unitOfWork = $objectManager->getUnitOfWork();
-
-        foreach ($this->getObjectsForRemoval() as $object) {
-            // if the object is not in the unit of work, we can remove it
-            // from the repository
-
-            if (!$unitOfWork->isScheduledForDelete($object)) {
-                $this->removeForRemoval($object);
-            }
-        }
     }
 
     /**

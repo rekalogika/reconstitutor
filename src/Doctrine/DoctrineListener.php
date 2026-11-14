@@ -17,6 +17,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Event\OnClearEventArgs;
 use Doctrine\ORM\Event\PostFlushEventArgs;
 use Doctrine\ORM\Event\PostLoadEventArgs;
+use Doctrine\ORM\Event\PostRemoveEventArgs;
 use Doctrine\ORM\Event\PreFlushEventArgs;
 use Doctrine\ORM\Event\PrePersistEventArgs;
 use Doctrine\ORM\Event\PreRemoveEventArgs;
@@ -58,10 +59,6 @@ final readonly class DoctrineListener
 
         // indicates that we are in the middle of a flush operation.
         $context->setInFlush(true);
-
-        // we take the opportunity to reconcile our list of objects for removal
-        // with unit of work
-        $context->reconcileObjectsForRemoval($objectManager);
     }
 
     public function postFlush(PostFlushEventArgs $args): void
@@ -169,8 +166,22 @@ final readonly class DoctrineListener
         // contain an uninitializable proxy, unless we initialize it here first.
 
         $this->initializeProxy($object);
+    }
 
-        // add to context
+    public function postRemove(PostRemoveEventArgs $args): void
+    {
+        $object = $args->getObject();
+
+        // if the object does not have a reconstitutor, we don't need to do
+        // anything
+
+        if (!$this->processor->hasReconstitutor($object)) {
+            return;
+        }
+
+        // the removal has been executed, so we add the object to the context.
+        // if the caller never flushes the removal, or cancels it by calling
+        // persist(), we don't get here.
 
         $objectManager = $args->getObjectManager();
         $this->registry->get($objectManager)->addForRemoval($object);

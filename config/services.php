@@ -125,6 +125,9 @@ return static function (ContainerConfigurator $containerConfigurator): void {
             'event' => 'preRemove',
         ])
         ->tag('doctrine.event_listener', [
+            'event' => 'postRemove',
+        ])
+        ->tag('doctrine.event_listener', [
             'event' => 'postLoad',
         ])
         ->tag('doctrine.event_listener', [
